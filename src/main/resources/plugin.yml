@@ -1,0 +1,20 @@
+name: Skills
+version: '${project.version}'
+main: poseidon.skills.Skills
+api-version: 1.19
+commands:
+  Class:
+    description: to choose a Class
+    usage: /<command>
+  Skills:
+    description: to bind Skills
+    usage: /<command>
+  Sk:
+    description: to bind Skills
+    usage: /<command>
+  ASC:
+    description: to use Skills
+    usage: /<command>
+  DB:
+    description: Debug
+    usage: /<command>
