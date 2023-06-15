@@ -40,6 +40,8 @@ public class BerufSkillGUI {
         return kampfSkills;
     }
 
+
+
     private static void setter(BerufSkills item){
         ItemStack skill = item.getIcon();
         ItemMeta meta = skill.getItemMeta();
