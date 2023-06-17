@@ -10,6 +10,10 @@ import poseidon.skills.JSON.JSONLoad;
 import poseidon.skills.JSON.JSONSave;
 import poseidon.skills.Klassen.Berufklasse;
 import poseidon.skills.Klassen.Kampfklassen;
+import poseidon.skills.Listners.SkillListener;
+import poseidon.skills.Listners.Testlistener;
+import poseidon.skills.Listners.XPListener;
+import poseidon.skills.TabCompleter.DBTabCompleter;
 import poseidon.skills.TabCompleter.KlassTabCompleter;
 import poseidon.skills.TabCompleter.SkillTabCompleter;
 
@@ -31,8 +35,10 @@ public final class Skills extends JavaPlugin {
         Objects.requireNonNull(this.getCommand("Sk")).setTabCompleter(new SkillTabCompleter());
         Objects.requireNonNull(this.getCommand("ASC")).setExecutor(new AktivSkillCommand());
         Objects.requireNonNull(this.getCommand("DB")).setExecutor(new Debug());
+        Objects.requireNonNull(this.getCommand("DB")).setTabCompleter(new DBTabCompleter());
         getServer().getPluginManager().registerEvents(new Testlistener(), this);
         getServer().getPluginManager().registerEvents(new SkillListener(), this);
+        getServer().getPluginManager().registerEvents(new XPListener(), this);
     }
 
     @Override
@@ -56,5 +62,6 @@ public final class Skills extends JavaPlugin {
         JSONLoad.loadBerufSkills();
         JSONLoad.loadKampfSkills();
         JSONLoad.loadMobs();
+        JSONLoad.loadXP();
     }
 }

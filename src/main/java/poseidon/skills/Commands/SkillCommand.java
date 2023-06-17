@@ -2,6 +2,7 @@ package poseidon.skills.Commands;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Statistic;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -10,9 +11,9 @@ import poseidon.skills.Klassen.Berufklasse;
 import poseidon.skills.Klassen.Kampfklassen;
 import poseidon.skills.Klassen.KlassChoose;
 import poseidon.skills.Klassen.Players;
-import poseidon.skills.SkillListener;
 import poseidon.skills.UIs.SkillUI;
 
+import static poseidon.skills.XPMapper.xpAdd;
 
 
 public class SkillCommand implements CommandExecutor {
@@ -28,8 +29,8 @@ public class SkillCommand implements CommandExecutor {
                 return true;
             }
             if(strings[0].equalsIgnoreCase("add")){
-                SkillListener.xpAdd(KlassChoose.getPlayers(player), 100, true);
-                SkillListener.xpAdd(KlassChoose.getPlayers(player), 100, false);
+                xpAdd(KlassChoose.getPlayers(player), 100, true);
+                xpAdd(KlassChoose.getPlayers(player), 100, false);
             }
         }
         if(strings.length == 2){
@@ -38,10 +39,10 @@ public class SkillCommand implements CommandExecutor {
                 assert p != null;
                 if(KlassChoose.securityCheck(p)) {
                     if(!KlassChoose.getPlayers(p).getBerufklasse().equals(Berufklasse.Unchosed)) {
-                        SkillListener.xpAdd(KlassChoose.getPlayers(player), 100, true);
+                        xpAdd(KlassChoose.getPlayers(player), 100, true);
                     }
                     if(!KlassChoose.getPlayers(p).getKampfklasse().equals(Kampfklassen.Unchosed)) {
-                        SkillListener.xpAdd(KlassChoose.getPlayers(player), 100, false);
+                        xpAdd(KlassChoose.getPlayers(player), 100, false);
                     }
                 }
                 else {
@@ -58,7 +59,7 @@ public class SkillCommand implements CommandExecutor {
             System.out.println(x);
             player.sendMessage(ChatColor.DARK_GRAY + "=======================\n" +
                     ChatColor.GOLD +"Player: " + player.getName() + "\n" +
-                    "Playtime: " + player.getPlayerTime() + "\n" +
+                    "Playtime: " + player.getStatistic(Statistic.PLAY_ONE_MINUTE)/20/60/60+ " Stunden\n" +
                     "Beruf: " + p.getBerufklasse().getDisplayName() + "\n" +
                     "Beruflevel: " + p.getBerufLevel() + "\n" +
                     "BerufXP: " + p.getBerufXP() + "/" + need + "\n" +

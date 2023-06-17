@@ -1,19 +1,41 @@
 package poseidon.skills.Klassen;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class Berufklasse {
-    public static Berufklasse Unchosed = new Berufklasse("Unchosed");
-    private static final Berufklasse Bauer = new Berufklasse("Bauer");
-    private static final Berufklasse Mienenarbeiter = new Berufklasse("Minenarbeiter");
-    private static final Berufklasse Holzfaeller = new Berufklasse("Holzfäller");
-    private static final Berufklasse Fischer = new Berufklasse("Fischer");
+    public static Berufklasse Unchosed = new Berufklasse("Unchosed", XPSource.None );
+    private static final Berufklasse Bauer = new Berufklasse("Bauer", XPSource.Farming);
+    private static final Berufklasse Mienenarbeiter = new Berufklasse("Minenarbeiter", XPSource.Mining);
+    private static final Berufklasse Holzfaeller = new Berufklasse("Holzfäller", XPSource.Wooding);
+    private static final Berufklasse Fischer = new Berufklasse("Fischer", XPSource.Fishing );
 
     private static final ArrayList<Berufklasse> test = new ArrayList<>();
-    private final String displayName;
+    private static final HashMap<Berufklasse, Berufklasse> advanced = new HashMap<>();
+    private String displayName;
+    private XPSource source;
 
-    public Berufklasse(String displayName){
+    public Berufklasse(String displayName, XPSource xpSource){
         this.displayName = displayName;
+        this.source = xpSource;
+    }
+    //AdvancedBerufklasse
+    public Berufklasse(String displayName, XPSource xpSource, Berufklasse base){
+        Berufklasse berufklasse = new Berufklasse(displayName,xpSource);
+        advanced.put(berufklasse, base);
+    }
+
+    public static boolean isAdvanced(Berufklasse berufklasse){
+        return advanced.containsKey(berufklasse);
+    }
+
+    public static Berufklasse getBase(Berufklasse berufklasse){
+        if(isAdvanced(berufklasse)){
+            return advanced.get(berufklasse);
+        }
+        else {
+            return berufklasse;
+        }
     }
 
 
@@ -60,6 +82,22 @@ public class Berufklasse {
         addToTest(Mienenarbeiter); //Stein/Erze
         addToTest(Holzfaeller); //Holz
         addToTest(Fischer); //Fischen
+    }
+
+    public XPSource getSource() {
+        return source;
+    }
+
+    public void setSource(XPSource source) {
+        this.source = source;
+    }
+
+    public enum XPSource {
+        None,
+        Mining,
+        Wooding,
+        Farming,
+        Fishing
     }
 
 }

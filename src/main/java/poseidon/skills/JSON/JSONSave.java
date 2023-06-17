@@ -1,5 +1,6 @@
 package poseidon.skills.JSON;
 
+import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.json.simple.JSONObject;
@@ -16,9 +17,11 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.HashMap;
 
 public class JSONSave {
     public static String path = getHostileMobDic() + "/Mobs.json";
+
     public static void start(){
         new File(getPlayerDic()).mkdirs();
         new File(getBerufKlassDic()).mkdirs();
@@ -26,6 +29,10 @@ public class JSONSave {
         new File(getKampfSkillDic()).mkdirs();
         new File(getBerufSkillDic()).mkdirs();
         new File(getHostileMobDic()).mkdirs();
+        new File(getFishingPath()).mkdirs();
+        new File(getMiningPath()).mkdirs();
+        new File(getWoodingPath()).mkdirs();
+        new File(getFarmingPath()).mkdirs();
     }
 
     public static void playerSave(Player player){
@@ -49,6 +56,21 @@ public class JSONSave {
             e.printStackTrace();
         }
     }
+
+    public static void generateDestroyFIles(HashMap<Material, Integer> map, location location){
+        map.forEach((material, integer) -> {
+            JSONObject object = new JSONObject();
+            object.put("Item", material.toString());
+            object.put("XP", integer);
+            String a = location.getPath() + material + ".json";
+            try (FileWriter file = new FileWriter(a)) {
+                file.write(object.toJSONString());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
 
     public static void generateHostileMob(){
         JSONObject object = new JSONObject();
@@ -122,6 +144,7 @@ public class JSONSave {
         Berufklasse.getTest().forEach((klassen) -> {
             JSONObject object = new JSONObject();
             object.put("Klasse", klassen.getDisplayName());
+            object.put("Source", klassen.getSource().toString());
             try (FileWriter file = new FileWriter(getBerufKlassenPath(klassen))) {
                 file.write(object.toJSONString());
             } catch (IOException e) {
@@ -150,7 +173,7 @@ public class JSONSave {
 
     public static String getHostileMobDic(){
         String dic1Path = Paths.get(getPluginpath()).toFile().getParent();
-        return Paths.get(dic1Path).toFile().getParent() + "/Mobs/";
+        return Paths.get(dic1Path).toFile().getParent() + "/XP/";
     }
 
     public static String getKampfKlassDic(){
@@ -173,6 +196,24 @@ public class JSONSave {
         return Paths.get(dic1Path).toFile().getParent() + "/BerufSkills/";
     }
 
+    public static String getFishingPath(){
+        String path = getHostileMobDic() + "/Fishing/";
+        return path;
+    }
+    public static String getMiningPath(){
+        String path = getHostileMobDic() + "/Mining/";
+        return path;
+    }
+
+    public static String getWoodingPath(){
+        String path = getHostileMobDic() + "/Chopping/";
+        return path;
+    }
+    public static String getFarmingPath(){
+        String path = getHostileMobDic() + "/Farming/";
+        return path;
+    }
+
 
 
     public static String getBerufKlassenPath(Berufklasse klassen){
@@ -193,5 +234,20 @@ public class JSONSave {
 
     public static String getBerufSkillPath(BerufSkills kampfSkills){
         return getBerufSkillDic() + "/" + kampfSkills.getName() + ".json";
+    }
+
+    public enum location{
+        Wooding(getWoodingPath()),
+        Farming(getFarmingPath()),
+        Fishing(getFishingPath()),
+        Mining(getMiningPath());
+        private final String path;
+        location(String str){
+            this.path = str;
+        }
+
+        public String getPath() {
+            return path;
+        }
     }
 }

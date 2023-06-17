@@ -58,7 +58,8 @@ public class JSONLoad {
             try(Reader reader = new FileReader(file)){
                 JSONObject object = (JSONObject) parser.parse(reader);
                 String display = (String) object.get("Klasse");
-                Berufklasse.addToTest(new Berufklasse(display));
+                Berufklasse.XPSource xpSource = Berufklasse.XPSource.valueOf((String) object.get("Source"));
+                Berufklasse.addToTest(new Berufklasse(display, xpSource));
             }
             catch (IOException | ParseException e) {
                 throw new RuntimeException(e);
@@ -76,6 +77,32 @@ public class JSONLoad {
             }
             catch (IOException | ParseException e) {
                 throw new RuntimeException(e);
+            }
+        }
+    }
+
+    public static void loadXP(){
+        for(JSONSave.location location : JSONSave.location.values()) {
+            File f = new File(location.getPath());
+            File[] files = f.listFiles();
+            if (files == null) {
+                return;
+            }
+            for (File file : files) {
+                JSONParser parser = new JSONParser();
+                try (Reader reader = new FileReader(file)) {
+                    JSONObject object = (JSONObject) parser.parse(reader);
+                    Material m = Material.matchMaterial((String) object.get("Item"));
+                    long xp = (long) object.get("XP");
+                    switch (location) {
+                        case Farming -> XPMapper.addFarm(m, (int) xp);
+                        case Mining -> XPMapper.addMine(m, (int) xp);
+                        case Fishing -> XPMapper.addFish(m, (int) xp);
+                        case Wooding -> XPMapper.addWood(m, (int) xp);
+                    }
+                } catch (IOException | ParseException e) {
+                    throw new RuntimeException(e);
+                }
             }
         }
     }
@@ -133,6 +160,7 @@ public class JSONLoad {
             }
         }
     }
+
 
     public static void loadMobs(){
         JSONParser parser = new JSONParser();

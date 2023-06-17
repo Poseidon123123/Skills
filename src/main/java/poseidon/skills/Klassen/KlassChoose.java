@@ -16,6 +16,10 @@ public class KlassChoose {
         return false;
     }
 
+    public static void resetPlayer(Player player){
+        chosenChat.replace(player.getName(), new Players(player,Berufklasse.Unchosed,Kampfklassen.Unchosed));
+    }
+
     public static void setPlayers(Players players){
         chosenChat.replace(players.getPlayer().getName(), players);
     }

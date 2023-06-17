@@ -16,7 +16,6 @@ public class KlassTabCompleter implements TabCompleter {
         if(args.length == 1){
             tabCompleteList.add("Beruf");
             tabCompleteList.add("Kampf");
-            Collections.sort(tabCompleteList);
         }
         else if(args.length == 2) {
             if(args[0].equalsIgnoreCase("Beruf")) {
@@ -26,6 +25,7 @@ public class KlassTabCompleter implements TabCompleter {
                 Kampfklassen.getKlassen().forEach(kampfjsk -> tabCompleteList.add(kampfjsk.getDisplayName()));
             }
         }
+        Collections.sort(tabCompleteList);
         return tabCompleteList;
     }
 }
