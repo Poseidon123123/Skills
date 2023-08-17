@@ -120,7 +120,6 @@ public class JSONLoad {
         }
 
     }
-
     public static void loadRecipes(){
         File f = new File(JSONSave.getCustomRecipeDic());
         File[] files = f.listFiles();
@@ -131,27 +130,22 @@ public class JSONLoad {
             JSONParser parser = new JSONParser();
             try (Reader reader = new FileReader(file)){
                 JSONObject object = (JSONObject) parser.parse(reader);
-                NamespacedKey key = (NamespacedKey) object.get("Key");
-                Material resultMaterial = Material.matchMaterial((String) object.get("ResultMaterial"));
-                ItemMeta resultMeta = (ItemMeta) object.get("ResultMeta");
+                String  keyString = (String) object.get("Key");
+                NamespacedKey key = NamespacedKey.fromString(keyString);
+                String resultData = (String) object.get("ResultItemData");
+                ItemStack result = JSONSave.itemFrom64(resultData);
                 Berufklasse berufklasse = Berufklasse.getOfArray((String) object.get("beruf"));
                 CraftingBookCategory category = CraftingBookCategory.valueOf((String) object.get("Category"));
                 String[] shape = (String[]) object.get("shape");
                 int b = 0;
-                assert resultMaterial != null;
-                ItemStack result = new ItemStack(resultMaterial);
-                result.setItemMeta(resultMeta);
+                assert key != null;
                 ShapedRecipe recipe = new ShapedRecipe(key, result);
                 recipe.shape(shape);
                 recipe.setCategory(category);
-                while (object.containsKey(b + "char") && object.containsKey(b + "Material")){
+                while (object.containsKey(b + "char") && object.containsKey(b + "ItemData")){
                     b++;
                     Character c = (Character) object.get(b + "char");
-                    Material material = Material.matchMaterial((String) object.get(b + "Material"));
-                    ItemMeta meta = (ItemMeta) object.get(b + "Meta");
-                    assert material != null;
-                    ItemStack itemStack = new ItemStack(material);
-                    itemStack.setItemMeta(meta);
+                    ItemStack itemStack = JSONSave.itemFrom64((String) object.get(b + "ItemData"));
                     RecipeChoice recipeChoice = new RecipeChoice.ExactChoice(itemStack);
                     recipe.setIngredient(c,recipeChoice);
                 }
@@ -161,7 +155,6 @@ public class JSONLoad {
             }
         }
     }
-
 
     public static void loadCustomItems(){
         File f = new File(JSONSave.getCustomItemListDic());

@@ -15,6 +15,7 @@ public class ManaMap {
     private final Player player;
     public ManaMap(Player player){
         this.player = player;
+        getMana().putIfAbsent(player, 0);
     }
     public int getManaValue(){
         return Mana.get(player);
@@ -37,10 +38,6 @@ public class ManaMap {
         return players.getKampfLevel() + players.getKampfklasse().getBaseMana();
     }
 
-    public static int getMaxMana(Players players){
-        return players.getKampfklasse().getBaseMana() + players.getKampfLevel();
-    }
-
     public void refreshManaBar(){
         Players players = KlassChoose.getPlayers(player);
         players.getManaBar().addPlayer(players.getPlayer(), ChatColor.GREEN + "Mana: " + getManaValue() + "/" + getMaxManaValue(), (double) getManaValue() / getMaxManaValue());
@@ -52,7 +49,7 @@ public class ManaMap {
                 return;
             }
             Players players = KlassChoose.getPlayers(name);
-            int a = getMaxMana(players);
+            int a = players.getMaxMana();
             ManaMap map = new ManaMap(name);
             if(a > integer){
                 map.setManaValue(Mana.get(name) + 1);

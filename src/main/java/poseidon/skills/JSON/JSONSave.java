@@ -7,7 +7,10 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.util.io.BukkitObjectInputStream;
+import org.bukkit.util.io.BukkitObjectOutputStream;
 import org.json.simple.JSONObject;
+import org.yaml.snakeyaml.external.biz.base64Coder.Base64Coder;
 import poseidon.skills.CustomItems.CustomItem;
 import poseidon.skills.Klassen.Berufklasse;
 import poseidon.skills.Klassen.Kampfklassen;
@@ -23,19 +26,14 @@ import poseidon.skills.skill.BerufSkills;
 import poseidon.skills.skill.KampfSkills;
 import poseidon.skills.skill.SkillMapper;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Paths;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 public class JSONSave {
 
 
-    public static void start(){
+    public static void start() {
         new File(getPlayerDic()).mkdirs();
         new File(getBerufKlassDic()).mkdirs();
         new File(getKampfKlassDic()).mkdirs();
@@ -53,23 +51,23 @@ public class JSONSave {
         new File(getCustomRecipe1Dic()).mkdirs();
     }
 
-    public static void playerSave(Player player){
+    public static void playerSave(Player player) {
         JSONObject obj = new JSONObject();
         Players players = KlassChoose.getPlayers(player);
         String name = player.getName();
         String dicPath = getPlayerDic();
         String filePath = getPlaerPath(player);
-        obj.put("Name", name );
+        obj.put("Name", name);
         obj.put("Berufklasse", players.getBerufklasse().getDisplayName());
         obj.put("Kampfklasse", players.getKampfklasse().getDisplayName());
         obj.put("Beruflevel", players.getBerufLevel());
         obj.put("BerufXP", players.getBerufXP());
         obj.put("Kampflevel", players.getKampfLevel());
         obj.put("KampfXP", players.getKampfXP());
-        obj.put("Mana", new ManaMap(players.getPlayer()).getManaValue());
+        obj.put("Mana", new ManaMap(player).getManaValue());
         obj.put("Money", players.getMoney());
         String s = "null";
-        if(players.getHometown() != null){
+        if (players.getHometown() != null) {
             s = players.getHometown().getCityName();
         }
         obj.put("City", s);
@@ -83,11 +81,10 @@ public class JSONSave {
     }
 
 
-
-    public static void generateDestroyFIles(List<XPObjekt> map){
+    public static void generateDestroyFIles(List<XPObjekt> map) {
         map.forEach(xpObjekt -> {
-            for(JSONSave.location location : location.values()){
-                if(xpObjekt.getXpSource().equals(location.xpSource)){
+            for (JSONSave.location location : location.values()) {
+                if (xpObjekt.getXpSource().equals(location.xpSource)) {
                     generateDestroyFIles(xpObjekt, location);
                     break;
                 }
@@ -95,21 +92,21 @@ public class JSONSave {
         });
     }
 
-    public static void generateDestroyFIles(XPObjekt xpObjekt, location location){
-            JSONObject object = new JSONObject();
-            object.put("Item", xpObjekt.getMaterial().toString());
-            object.put("XP", xpObjekt.getXp());
-            object.put("Money", xpObjekt.getMoney());
-            String a = location.getPath() + xpObjekt.getMaterial() + ".json";
-            try (FileWriter file = new FileWriter(a)) {
-                file.write(object.toJSONString());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+    public static void generateDestroyFIles(XPObjekt xpObjekt, location location) {
+        JSONObject object = new JSONObject();
+        object.put("Item", xpObjekt.getMaterial().toString());
+        object.put("XP", xpObjekt.getXp());
+        object.put("Money", xpObjekt.getMoney());
+        String a = location.getPath() + xpObjekt.getMaterial() + ".json";
+        try (FileWriter file = new FileWriter(a)) {
+            file.write(object.toJSONString());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
-    public static void generateDestroyFIles(List<XPObjekt> map, location location){
-        map.forEach((xpObjekt)-> {
+    public static void generateDestroyFIles(List<XPObjekt> map, location location) {
+        map.forEach((xpObjekt) -> {
             JSONObject object = new JSONObject();
             object.put("Item", xpObjekt.getMaterial().toString());
             object.put("XP", xpObjekt.getXp());
@@ -124,7 +121,7 @@ public class JSONSave {
     }
 
 
-    public static void kampfKlassenSave(){
+    public static void kampfKlassenSave() {
         Kampfklassen.getKlassen().forEach((klassen) -> {
             JSONObject object = new JSONObject();
             object.put("Klasse", klassen.getDisplayName());
@@ -137,8 +134,8 @@ public class JSONSave {
         });
     }
 
-    public static void kampfSkillSave(){
-        for (KampfSkills kampfSkills : SkillMapper.getKampfSkills()){
+    public static void kampfSkillSave() {
+        for (KampfSkills kampfSkills : SkillMapper.getKampfSkills()) {
             JSONObject object = new JSONObject();
             object.put("Name", kampfSkills.getName());
             object.put("Kampfklasse", kampfSkills.getKampfKlasse().getDisplayName());
@@ -147,18 +144,19 @@ public class JSONSave {
             object.put("Cooldown", kampfSkills.getCooldown());
             object.put("neededLevel", kampfSkills.getNeededLevel());
             object.put("Mana", kampfSkills.getConsumedMana());
-            try(FileWriter file = new FileWriter(getKampfSkillPath(kampfSkills))){
+            try (FileWriter file = new FileWriter(getKampfSkillPath(kampfSkills))) {
                 file.write(object.toJSONString());
-            }catch (IOException e){
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
-    public static void saveRecipes(){
+
+    public static void saveRecipes() {
         CustomItem.shapedRecipeList.forEach((shapedRecipe, berufklasse) -> {
             JSONObject object = new JSONObject();
             object.put("beruf", berufklasse.getDisplayName());
-            object.put("Category",shapedRecipe.getCategory().toString());
+            object.put("Category", shapedRecipe.getCategory().toString());
             object.put("shape", shapedRecipe.getShape());
             Map<Character, ItemStack> a = shapedRecipe.getIngredientMap();
             int b = 0;
@@ -166,15 +164,13 @@ public class JSONSave {
                 Character character = entry.getKey();
                 ItemStack itemStack = entry.getValue();
                 b++;
-                object.put(b + "char", character);
-                object.put(b + "Material", itemStack.getType().toString());
-                object.put(b + "Meta", itemStack.getItemMeta());
+                object.put(b + "char", character.toString());
+                object.put(b + "ItemData", itemTo64(itemStack));
             }
-            object.put("Key", shapedRecipe.getKey());
+            object.put("Key", shapedRecipe.getKey().toString());
             ItemStack item = shapedRecipe.getResult();
-            object.put("ResultMaterial", item.getType().toString());
-            object.put("ResultMeta", item.getItemMeta());
-            try (FileWriter file = new FileWriter(getCustomRecipePath(shapedRecipe))){
+            object.put("ResultItemData", itemTo64(item));
+            try (FileWriter file = new FileWriter(getCustomRecipePath(shapedRecipe))) {
                 file.write(object.toJSONString());
 
             } catch (IOException e) {
@@ -183,8 +179,8 @@ public class JSONSave {
         });
     }
 
-    public static void berufSkillSave(){
-        for (BerufSkills kampfSkills : SkillMapper.getBerufSkills()){
+    public static void berufSkillSave() {
+        for (BerufSkills kampfSkills : SkillMapper.getBerufSkills()) {
             JSONObject object = new JSONObject();
             object.put("Name", kampfSkills.getName());
             object.put("Kampfklasse", kampfSkills.getBerufklasse().getDisplayName());
@@ -193,15 +189,15 @@ public class JSONSave {
             object.put("Cooldown", kampfSkills.getCooldown());
             object.put("neededLevel", kampfSkills.getNeededLevel());
             object.put("Mana", kampfSkills.getConsumedMana());
-            try(FileWriter file = new FileWriter(getBerufSkillPath(kampfSkills))){
+            try (FileWriter file = new FileWriter(getBerufSkillPath(kampfSkills))) {
                 file.write(object.toJSONString());
-            }catch (IOException e){
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
 
-    public static void berufKlassenSave(){
+    public static void berufKlassenSave() {
         Berufklasse.getTest().forEach((klassen) -> {
             JSONObject object = new JSONObject();
             object.put("Klasse", klassen.getDisplayName());
@@ -214,12 +210,12 @@ public class JSONSave {
         });
     }
 
-    public static void mobSave(){
+    public static void mobSave() {
         XPMapper.getMobKillXP().forEach((entityType, integer) -> {
             JSONObject object = new JSONObject();
             object.put("Entiy", entityType.getTranslationKey());
             object.put("XP", integer);
-            try(FileWriter fileWriter = new FileWriter(getMobPath(entityType.getTranslationKey()))){
+            try (FileWriter fileWriter = new FileWriter(getMobPath(entityType.getTranslationKey()))) {
                 fileWriter.write(object.toJSONString());
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -227,25 +223,25 @@ public class JSONSave {
         });
     }
 
-    public static void saveCitys(){
+    public static void saveCitys() {
         CityMapper.getCityList().forEach(city -> {
             JSONObject object = new JSONObject();
             object.put("Name", city.getCityName());
             object.put("Money", city.getCityMoney());
             object.put("Meister", city.getBuergermeisterUUID().toString());
             int x = 1;
-            for(UUID player : city.getBuergerUUID()){
+            for (UUID player : city.getBuergerUUID()) {
                 object.put("Bürger" + x, player.toString());
                 x++;
             }
             int y = 1;
-            for(Chunk chunk : city.getClaimedChunks()){
+            for (Chunk chunk : city.getClaimedChunks()) {
                 object.put("XChunk" + y, chunk.getX());
-                object.put("ZChunk" + y,chunk.getZ());
+                object.put("ZChunk" + y, chunk.getZ());
                 object.put("ChunkWolrd" + y, chunk.getWorld().getName());
                 y++;
             }
-            try(FileWriter fileWriter = new FileWriter(getCityPath(city))){
+            try (FileWriter fileWriter = new FileWriter(getCityPath(city))) {
                 fileWriter.write(object.toJSONString());
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -253,27 +249,28 @@ public class JSONSave {
         });
     }
 
-    public static void safeCustomItems(){
+    public static void safeCustomItems() {
         for (Map.Entry<String, ItemStack> entry : CustomItem.getItemMap().entrySet()) {
             ItemStack itemStack = entry.getValue();
             JSONObject object = saveItemstack(itemStack);
-            if(CustomItem.berufItemMap.containsKey(itemStack)){
+            if (CustomItem.berufItemMap.containsKey(itemStack)) {
                 object.put("Beruf", CustomItem.berufItemMap.get(itemStack));
             }
-            if(CustomItem.kampfItemMap.containsKey(itemStack)){
+            if (CustomItem.kampfItemMap.containsKey(itemStack)) {
                 object.put("Kampf", CustomItem.kampfItemMap.get(itemStack));
             }
-            try(FileWriter fileWriter = new FileWriter(getCustomItemPath(itemStack))){
+            try (FileWriter fileWriter = new FileWriter(getCustomItemPath(itemStack))) {
                 fileWriter.write(object.toJSONString());
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
     }
-    public static JSONObject saveItemstack(ItemStack itemStack){
+
+    public static JSONObject saveItemstack(ItemStack itemStack) {
         JSONObject object = new JSONObject();
         ItemMeta meta = itemStack.getItemMeta();
-        if(meta != null) {
+        if (meta != null) {
             int i = 1;
             for (String s1 : Objects.requireNonNull(meta.getLore())) {
                 object.put("LoreLine" + i, s1);
@@ -287,48 +284,45 @@ public class JSONSave {
             }
             int i2 = 1;
             meta.getEnchants().forEach((enchantment, integer) -> {
-                object.put("enchantment"+ i2, enchantment.getKey().toString());
+                object.put("enchantment" + i2, enchantment.getKey().toString());
                 object.put("enchantLevel" + i2, integer);
 
             });
             object.put("breakable", meta.isUnbreakable());
-            object.put("Material",itemStack.getType().toString());
+            object.put("Material", itemStack.getType().toString());
         }
         return object;
     }
 
-    public static JSONObject saveItemstack(ItemStack itemStack, int b){
+    public static JSONObject saveItemstack(ItemStack itemStack, int b) {
         JSONObject object = new JSONObject();
         ItemMeta meta = itemStack.getItemMeta();
-        if(meta != null) {
+        if (meta != null) {
             int i = 1;
             for (String s1 : Objects.requireNonNull(meta.getLore())) {
                 object.put(b + "LoreLine" + i, s1);
                 i++;
             }
-            object.put(b +"DisplayName", meta.getDisplayName());
-            object.put(b +"CustomModelData", meta.getCustomModelData());
+            object.put(b + "DisplayName", meta.getDisplayName());
+            object.put(b + "CustomModelData", meta.getCustomModelData());
             int i1 = 1;
             for (ItemFlag itemFlag : meta.getItemFlags()) {
-                object.put(b +"ItemFlag" + i1, itemFlag.name());
+                object.put(b + "ItemFlag" + i1, itemFlag.name());
             }
             int i2 = 1;
             meta.getEnchants().forEach((enchantment, integer) -> {
-                object.put(b +"enchantment"+ i2, enchantment.getKey().toString());
-                object.put(b +"enchantLevel" + i2, integer);
+                object.put(b + "enchantment" + i2, enchantment.getKey().toString());
+                object.put(b + "enchantLevel" + i2, integer);
 
             });
-            object.put(b +"breakable", meta.isUnbreakable());
-            object.put(b +"Material",itemStack.getType().toString());
+            object.put(b + "breakable", meta.isUnbreakable());
+            object.put(b + "Material", itemStack.getType().toString());
         }
         return object;
     }
 
 
-
-
-
-    public static String getPluginpath(){
+    public static String getPluginpath() {
         String Pluginpath = Skills.class.getProtectionDomain().getCodeSource().getLocation().getPath();
         if (Pluginpath.startsWith("/")) {
             Pluginpath = Pluginpath.substring(1);
@@ -337,123 +331,134 @@ public class JSONSave {
     }
 
 
-    public static String getBerufKlassDic(){
+    public static String getBerufKlassDic() {
         String dic1Path = Paths.get(getPluginpath()).toFile().getParent();
         return Paths.get(dic1Path).toFile().getParent() + "/Berufklassen/";
     }
-    public static String getCityDic(){
+
+    public static String getCityDic() {
         String dic1Path = Paths.get(getPluginpath()).toFile().getParent();
         return Paths.get(dic1Path).toFile().getParent() + "/Citys/";
     }
 
-    public static String getHostileMobDic(){
+    public static String getHostileMobDic() {
         String dic1Path = Paths.get(getPluginpath()).toFile().getParent();
         return Paths.get(dic1Path).toFile().getParent() + "/XP/";
     }
 
-    public static String getKampfKlassDic(){
+    public static String getKampfKlassDic() {
         String dic1Path = Paths.get(getPluginpath()).toFile().getParent();
         return Paths.get(dic1Path).toFile().getParent() + "/Kampfklasse/";
     }
 
-    public static String getPlayerDic(){
+    public static String getPlayerDic() {
         String dic1Path = Paths.get(getPluginpath()).toFile().getParent();
         return Paths.get(dic1Path).toFile().getParent() + "/players/";
     }
 
-    public static String getKampfSkillDic(){
+    public static String getKampfSkillDic() {
         String dic1Path = Paths.get(getPluginpath()).toFile().getParent();
         return Paths.get(dic1Path).toFile().getParent() + "/KampfSkills/";
     }
 
-    public static String getBerufSkillDic(){
+    public static String getBerufSkillDic() {
         String dic1Path = Paths.get(getPluginpath()).toFile().getParent();
         return Paths.get(dic1Path).toFile().getParent() + "/BerufSkills/";
     }
 
-    public static String getFishingPath(){
+    public static String getFishingPath() {
         String path = getHostileMobDic() + "/Fishing/";
         return path;
     }
-    public static String getMiningPath(){
+
+    public static String getMiningPath() {
         String path = getHostileMobDic() + "/Mining/";
         return path;
     }
 
-    public static String getWoodingPath(){
+    public static String getWoodingPath() {
         String path = getHostileMobDic() + "/Chopping/";
         return path;
     }
-    public static String getFarmingPath(){
+
+    public static String getFarmingPath() {
         String path = getHostileMobDic() + "/Farming/";
         return path;
     }
-    public static String getMobsPath(){
+
+    public static String getMobsPath() {
         String path = getHostileMobDic() + "/Mobs/";
         return path;
     }
-    public static String getCustomItemDic(){
+
+    public static String getCustomItemDic() {
         String dic1Path = Paths.get(getPluginpath()).toFile().getParent();
         return Paths.get(dic1Path).toFile().getParent() + "/CustomItems/";
     }
-    public static String getCustomItemListDic(){
+
+    public static String getCustomItemListDic() {
         return getCustomItemDic() + "/Items/";
     }
-    public static String getCustomRecipeDic(){
+
+    public static String getCustomRecipeDic() {
         return getCustomItemDic() + "/ShapedRecipes/";
     }
-    public static String getCustomRecipe1Dic(){
+
+    public static String getCustomRecipe1Dic() {
         return getCustomItemDic() + "/ShapelessRecipes/";
     }
 
 
-
-    public static String getBerufKlassenPath(Berufklasse klassen){
+    public static String getBerufKlassenPath(Berufklasse klassen) {
         return getBerufKlassDic() + "/" + klassen.getDisplayName() + ".json";
     }
 
-    public static String getCityPath(City city){
+    public static String getCityPath(City city) {
         return getCityDic() + "/" + city.getCityName() + ".json";
     }
 
-    public static String getkampfKlassenPath(Kampfklassen klassen){
+    public static String getkampfKlassenPath(Kampfklassen klassen) {
         return getKampfKlassDic() + "/" + klassen.getDisplayName() + ".json";
     }
 
-    public static String getPlaerPath(Player player){
+    public static String getPlaerPath(Player player) {
         return getPlayerDic() + "/" + player.getName() + ".json";
     }
 
-    public static String getKampfSkillPath(KampfSkills kampfSkills){
+    public static String getKampfSkillPath(KampfSkills kampfSkills) {
         return getKampfSkillDic() + "/" + kampfSkills.getName() + ".json";
     }
 
-    public static String getBerufSkillPath(BerufSkills kampfSkills){
+    public static String getBerufSkillPath(BerufSkills kampfSkills) {
         return getBerufSkillDic() + "/" + kampfSkills.getName() + ".json";
     }
-    public static String getCustomItemPath(ItemStack itemStack){
+
+    public static String getCustomItemPath(ItemStack itemStack) {
         return getCustomItemListDic() + "/" + Objects.requireNonNull(itemStack.getItemMeta()).getDisplayName() + ".json";
     }
-    public static String getCustomRecipePath(ShapelessRecipe recipe){
+
+    public static String getCustomRecipePath(ShapelessRecipe recipe) {
         return getCustomRecipe1Dic() + "/" + recipe.getKey() + ".json";
     }
-    public static String getCustomRecipePath(ShapedRecipe recipe){
+
+    public static String getCustomRecipePath(ShapedRecipe recipe) {
         return getCustomRecipeDic() + "/" + recipe.getKey().getKey() + ".json";
     }
 
 
-    public static String getMobPath(String string){
+    public static String getMobPath(String string) {
         return getMobsPath() + "/" + string + ".json";
     }
 
-    public enum location{
+    public enum location {
         Wooding(getWoodingPath(), Berufklasse.XPSource.Wooding),
         Farming(getFarmingPath(), Berufklasse.XPSource.Farming),
         Fishing(getFishingPath(), Berufklasse.XPSource.Fishing),
         Mining(getMiningPath(), Berufklasse.XPSource.Mining);
         private final String path;
         private final Berufklasse.XPSource xpSource;
-        location(String str, Berufklasse.XPSource xpSource){
+
+        location(String str, Berufklasse.XPSource xpSource) {
             this.path = str;
             this.xpSource = xpSource;
         }
@@ -464,6 +469,32 @@ public class JSONSave {
 
         public Berufklasse.XPSource getXpSource() {
             return xpSource;
+        }
+    }
+
+    public static String itemTo64(ItemStack stack) throws IllegalStateException {
+        try {
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            BukkitObjectOutputStream dataOutput = new BukkitObjectOutputStream(outputStream);
+            dataOutput.writeObject(stack);
+
+            // Serialize that array
+            dataOutput.close();
+            return Base64Coder.encodeLines(outputStream.toByteArray());
+        } catch (Exception e) {
+            throw new IllegalStateException("Unable to save item stack.", e);
+        }
+    }
+
+    public static ItemStack itemFrom64(String data) throws IOException {
+        try {
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(Base64Coder.decodeLines(data));
+            try (BukkitObjectInputStream dataInput = new BukkitObjectInputStream(inputStream)) {
+                return (ItemStack) dataInput.readObject();
+            }
+        } catch (ClassNotFoundException e) {
+            throw new IOException("Unable to decode class type.", e);
+
         }
     }
 }

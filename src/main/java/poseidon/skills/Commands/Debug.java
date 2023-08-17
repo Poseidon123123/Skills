@@ -92,6 +92,9 @@ public class Debug implements TabExecutor {
                 if(args[1].equalsIgnoreCase("Chunks")){
                     CityMapper.getclaimedChunks().forEach((chunk, city) -> player.sendMessage(city.getCityName() + " + " + chunk.getX() + " / " + chunk.getZ()));
                 }
+                if(args[1].equalsIgnoreCase("Recipes")){
+                    CustomItem.shapedRecipeList.forEach((shapedRecipe, berufklasse) -> player.sendMessage(shapedRecipe.getKey().toString()));
+                }
             }
             if (args[0].equalsIgnoreCase("addList")) {
                 if(!sender.hasPermission("Skills.command.DB.loadList")) {

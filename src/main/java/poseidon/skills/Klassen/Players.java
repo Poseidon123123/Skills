@@ -167,6 +167,10 @@ public class Players {
         return hometown;
     }
 
+    public int getMaxMana(){
+        return getKampfklasse().getBaseMana() + getKampfLevel();
+    }
+
     public void setHometown(City hometown) {
         this.hometown = hometown;
     }
