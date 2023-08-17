@@ -1,12 +1,15 @@
 package poseidon.skills;
 
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
+import poseidon.skills.Commands.Debug;
+import poseidon.skills.Klassen.Berufklasse;
+import poseidon.skills.Klassen.Kampfklassen;
 import poseidon.skills.Klassen.Players;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
+import java.util.function.DoubleBinaryOperator;
+
 
 public class XPMapper {
     private static final HashMap<EntityType, Integer> mobKillXP = new HashMap<>();
@@ -17,25 +20,28 @@ public class XPMapper {
         mobKillXP.remove(mob);
     }
     public static int getMobXP(EntityType mob){
-        return mobKillXP.get(mob);
+        return mobKillXP.getOrDefault(mob, 0);
     }
     public static HashMap<EntityType, Integer> getMobKillXP(){
         return mobKillXP;
     }
 
-    public static void xpAdd(Players p, int xp, boolean beruf){
-        if(beruf) {
+    public static void xpAdd(Players p, double xp, boolean beruf){
+        if(xp <= 0){
+            return;
+        }
+        if(beruf && !p.getBerufklasse().equals(Berufklasse.Unchosed)) {
             int i1 = p.getBerufLevel();
             int i2 = 0;
-            int xp2 = xp + p.getBerufXP();
-            ArrayList<Integer> neededxp = new ArrayList<>();
+            int xp2 = (int) (xp + p.getBerufXP());
+            ArrayList<Integer> needed = new ArrayList<>();
             int level = 0;
             while (i2 <= 100 && i1 < 101) {
-                neededxp.add(((i1 + 10) * (i1 + 10)) + 50);
+                needed.add((int) evaluateMathExpression(Objects.requireNonNull(Skills.getInstance().getConfig().getString("Funktions.XP")), i1));
                 i1++;
                 i2++;
             }
-            for (int i : neededxp) {
+            for (int i : needed) {
                 if (xp2 >= i) {
                     xp2 = xp2 - i;
                     level++;
@@ -44,79 +50,104 @@ public class XPMapper {
             p.setBerufLevel(p.getBerufLevel() + level);
             p.setBerufXP(xp2);
             p.getPlayer().sendMessage(ChatColor.GREEN + String.valueOf(xp) + " XP");
+            Debug.berufBar(p.getPlayer());
             if (level >= 1) {
-                p.getPlayer().sendMessage(ChatColor.GREEN + "Herzlichen Glückwunsch, du bist " + level + " Level aufgestiegen\n" +
-                        "Du bist jetzt Level: " + p.getBerufLevel());
+                p.getPlayer().sendMessage(ChatColor.GREEN + "Herzlichen Glückwunsch, du bist jetzt " + p.getBerufklasse().getDisplayName() +" Level: " + p.getBerufLevel());
             }
         }
         else {
-            int i1 = p.getKampfLevel();
-            int i2 = 0;
-            int xp2 = xp + p.getKampfXP();
-            ArrayList<Integer> neededxp = new ArrayList<>();
-            int level = 0;
-            while (i2 <= 100 && i1 < 101) {
-                neededxp.add(((i1 + 10) * (i1 + 10)) + 50);
-                System.out.println(i1 + " " + i2);
-                i1++;
-                i2++;
-            }
-            for (int i : neededxp) {
-                if (xp2 >= i) {
-                    xp2 = xp2 - i;
-                    level++;
-                } else break;
-            }
-            p.setKampfLevel(p.getKampfLevel() + level);
-            p.setKampfXP(xp2);
-            p.getPlayer().sendMessage(ChatColor.GREEN + String.valueOf(xp) + " XP");
-            if (level >= 1) {
-                p.getPlayer().sendMessage(ChatColor.GREEN + "Herzlichen Glückwunsch, du bist " + level + " Level aufgestiegen\n" +
-                        "Du bist jetzt Level: " + p.getKampfLevel());
+            if(!p.getKampfklasse().equals(Kampfklassen.Unchosed)) {
+                int i1 = p.getKampfLevel();
+                int i2 = 0;
+                int xp2 = (int) (xp + p.getKampfXP());
+                ArrayList<Integer> needed = new ArrayList<>();
+                int level = 0;
+                while (i2 <= 100 && i1 < 101) {
+                    needed.add((int) evaluateMathExpression(Objects.requireNonNull(Skills.getInstance().getConfig().getString("Funktions.XP")), i1));
+                    i1++;
+                    i2++;
+                }
+                for (int i : needed) {
+                    if (xp2 >= i) {
+                        xp2 = xp2 - i;
+                        level++;
+                    } else break;
+                }
+                p.setKampfLevel(p.getKampfLevel() + level);
+                p.setKampfXP(xp2);
+                p.getPlayer().sendMessage(ChatColor.GREEN + String.valueOf(xp) + " XP");
+                Debug.kampfBar(p.getPlayer());
+                if (level >= 1) {
+                    p.getPlayer().sendMessage(ChatColor.GREEN + "Herzlichen Glückwunsch, du bist jetzt " + p.getKampfklasse().getDisplayName() +" Level: " + p.getKampfLevel());
+                }
             }
         }
     }
+    public static double evaluateMathExpression(String expression, double x) {
+        Map<String, DoubleBinaryOperator> operators = new HashMap<>();
+        operators.put("+", Double::sum);
+        operators.put("-", (a, b) -> a - b);
+        operators.put("*", (a, b) -> a * b);
+        operators.put("/", (a, b) -> a / b);
+        operators.put("^", Math::pow); // Hochzeichen für Potenzierung
 
-    private static final HashMap<Material, Integer> fishXP = new HashMap<>();
-    public static void addFish(Material fish, int x){
-        fishXP.putIfAbsent(fish, x);
-    }
-    public static int getFishXP(Material fish){
-        return fishXP.getOrDefault(fish, 0);
-    }
-    public static HashMap<Material, Integer> getFishXP(){
-        return fishXP;
+        String[] tokens = expression.split("(?=[-+*/^()])|(?<=[-+*/^()])");
+
+        Deque<Double> values = new ArrayDeque<>();
+        Deque<String> operatorsStack = new ArrayDeque<>();
+
+        for (String token : tokens) {
+            if (token.isEmpty()) {
+                continue;
+            }
+            char firstChar = token.charAt(0);
+            if (Character.isDigit(firstChar) || firstChar == '.') {
+                values.push(Double.parseDouble(token));
+            } else if (token.equals("x")) {
+                values.push(x);
+            } else if (token.equals("(")) {
+                operatorsStack.push(token);
+            } else if (token.equals(")")) {
+                while (!operatorsStack.isEmpty() && !operatorsStack.peek().equals("(")) {
+                    evaluateTopOperator(values, operatorsStack, operators);
+                }
+                operatorsStack.pop(); // Entferne die öffnende Klammer
+            } else {
+                while (!operatorsStack.isEmpty() && hasPrecedence(operatorsStack.peek(), token)) {
+                    evaluateTopOperator(values, operatorsStack, operators);
+                }
+                operatorsStack.push(token);
+            }
+        }
+
+        while (!operatorsStack.isEmpty()) {
+            evaluateTopOperator(values, operatorsStack, operators);
+        }
+
+        return values.pop();
     }
 
-    private static final HashMap<Material, Integer> mineXP = new HashMap<>();
-    public static void addMine(Material mine, int x){
-        mineXP.put(mine, x);
-    }
-    public static int getMineXP(Material mine){
-        return mineXP.get(mine);
-    }
-    public static HashMap<Material,Integer> getMineXP(){
-        return mineXP;
+    private static boolean hasPrecedence(String op1, String op2) {
+        int precedence1 = getPrecedence(op1);
+        int precedence2 = getPrecedence(op2);
+        return precedence1 >= 0 && precedence1 >= precedence2;
     }
 
-    private static final HashMap<Material, Integer> woodXP = new HashMap<>();
-    private static final HashMap<Material, Integer> farmXP = new HashMap<>();
-    public static void addFarm(Material mine, int x){
-        farmXP.put(mine, x);
+    private static int getPrecedence(String operator) {
+        return switch (operator) {
+            case "+", "-" -> 1;
+            case "*", "/" -> 2;
+            case "^" -> 3; // Potenzierung hat die höchste Priorität
+            default -> -1; // Wenn es kein Operator ist, geben wir -1 zurück
+        };
     }
-    public static int getFarmXP(Material mine){
-        return farmXP.get(mine);
-    }
-    public static HashMap<Material,Integer> getFarmXP(){
-        return farmXP;
-    }
-    public static void addWood(Material mine, int x){
-        woodXP.put(mine, x);
-    }
-    public static int getWoodXP(Material mine){
-        return woodXP.get(mine);
-    }
-    public static HashMap<Material,Integer> getWoodXP(){
-        return woodXP;
+
+    private static void evaluateTopOperator(Deque<Double> values, Deque<String> operatorsStack,
+                                            Map<String, DoubleBinaryOperator> operators) {
+        String operator = operatorsStack.pop();
+        Double b = values.pop();
+        Double a = values.pop();
+        DoubleBinaryOperator operation = operators.get(operator);
+        values.push(operation.applyAsDouble(a, b));
     }
 }

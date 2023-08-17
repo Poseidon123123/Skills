@@ -17,6 +17,7 @@ public class KlassChoose {
     }
 
     public static void resetPlayer(Player player){
+        chosenChat.get(player.getName()).getManaBar().deleteBar();
         chosenChat.replace(player.getName(), new Players(player,Berufklasse.Unchosed,Kampfklassen.Unchosed));
     }
 

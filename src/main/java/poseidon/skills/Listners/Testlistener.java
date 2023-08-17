@@ -5,8 +5,11 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerKickEvent;
@@ -15,9 +18,14 @@ import org.bukkit.inventory.ItemStack;
 import poseidon.skills.JSON.JSONLoad;
 import poseidon.skills.JSON.JSONSave;
 import poseidon.skills.Klassen.Berufklasse;
+import poseidon.skills.Klassen.Kampfklassen;
 import poseidon.skills.Klassen.KlassChoose;
 import poseidon.skills.Klassen.Players;
+import poseidon.skills.ManaMap;
+import poseidon.skills.Skills;
 import poseidon.skills.UIs.UI;
+import poseidon.skills.citys.City;
+import poseidon.skills.citys.CityMapper;
 import poseidon.skills.skill.BerufSkills;
 import poseidon.skills.skill.KampfSkills;
 import poseidon.skills.skill.SkillMapper;
@@ -25,10 +33,16 @@ import poseidon.skills.skill.SkillMapper;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 import static poseidon.skills.Klassen.KlassChoose.getPlayers;
 
 public class Testlistener implements Listener {
+    private void playerJoinFunktion(Players players){
+        ManaMap.getMana().putIfAbsent(players.getPlayer(), players.getKampfLevel() + players.getKampfklasse().getBaseMana());
+        invReset(players.getPlayer());
+        new ManaMap(players.getPlayer()).refreshManaBar();
+    }
 
     @EventHandler
     public void PlayerJoin(PlayerJoinEvent event){
@@ -41,25 +55,57 @@ public class Testlistener implements Listener {
             players = KlassChoose.getPlayers(player);
         }
         KlassChoose.addPlayers(players, player);
-        if(getPlayers(player).getBerufklasse().equals(Berufklasse.Unchosed)){
-            player.sendMessage(ChatColor.BLUE + "Willkommen auf dem Server, " + player.getName());
-            event.setJoinMessage(ChatColor.DARK_RED + "Heißt " + player.getName() + " Herzlich Willkommen");
-        }
-        else {
+        playerJoinFunktion(players);
+        if(!getPlayers(player).getBerufklasse().equals(Berufklasse.Unchosed)){
             event.setJoinMessage(ChatColor.BLUE + "Willkommen zurück, " + player.getName());
             player.performCommand("Sk");
         }
+        else if(!getPlayers(player).getKampfklasse().equals(Kampfklassen.Unchosed)){
+            event.setJoinMessage(ChatColor.BLUE + "Willkommen zurück, " + player.getName());
+            player.performCommand("Sk");
+        }
+        else {
+            event.setJoinMessage(ChatColor.DARK_RED + "Heißt " + player.getName() + " Herzlich Willkommen");
+            player.sendMessage(ChatColor.BLUE + "Willkommen auf dem Server, " + player.getName());
+        }
+    }
+
+    public void invReset(Player player){
+        for(ItemStack item : player.getInventory()){
+            if(item == null){
+                continue;
+            }
+            for (KampfSkills b : SkillMapper.getKampfSkills()) {
+                if (item.isSimilar(b.getIcon())) {
+                    if(item.getAmount() != 1){
+                        item.setAmount(1);
+                    }
+                }
+            }
+            for (BerufSkills b : SkillMapper.getBerufSkills()) {
+                if (item.isSimilar(b.getIcon())) {
+                    if(item.getAmount() != 1){
+                        item.setAmount(1);
+                    }
+                }
+            }
+        }
+    }
+
+    public static void PlayerLeaveAction(Player player){
+        JSONSave.playerSave(player);
     }
 
     @EventHandler
     public void PlayerLeave(PlayerQuitEvent event){
-        JSONSave.playerSave(event.getPlayer());
+        PlayerLeaveAction(event.getPlayer());
     }
 
     @EventHandler
     public void PlayerLeave(PlayerKickEvent event){
-        JSONSave.playerSave(event.getPlayer());
+        PlayerLeaveAction(event.getPlayer());
     }
+
 
     @EventHandler
     public void PlayerDeath(PlayerDeathEvent event){
@@ -90,6 +136,13 @@ public class Testlistener implements Listener {
             for (ItemStack itemStack : deleteList){
                 event.getDrops().remove(itemStack);
             }
+        }
+    }
+
+    @EventHandler
+    public void invClose(InventoryCloseEvent event){
+        if(event.getView() instanceof UI ui){
+            ui.invClose(event);
         }
     }
 
@@ -128,10 +181,7 @@ public class Testlistener implements Listener {
             }
         }
     }
-
-
-
-
+    
     @EventHandler(ignoreCancelled = true)
     public void onDrag(InventoryDragEvent event) {
         if (event.getView() instanceof UI) {
@@ -150,6 +200,41 @@ public class Testlistener implements Listener {
                     event.setCancelled(true);
                     return;
                 }
+            }
+        }
+    }
+
+
+    @EventHandler
+    public void onBreak(BlockBreakEvent event){
+        if(CityMapper.ChunkClaimed(event.getBlock().getChunk())){
+            event.setCancelled(true);
+            City city = CityMapper.whoClaimed(event.getBlock().getChunk());
+            for(UUID uuid : city.getBuergerUUID()){
+                if(uuid.equals(event.getPlayer().getUniqueId())){
+                    event.setCancelled(false);
+                    break;
+                }
+            }
+            if(event.isCancelled()){
+                event.getPlayer().sendMessage(Objects.requireNonNull(Skills.getInstance().getConfig().getString("Event.NotInCity.Break")));
+            }
+        }
+    }
+
+    @EventHandler
+    public void onPlace(BlockPlaceEvent event){
+        if(CityMapper.ChunkClaimed(event.getBlock().getChunk())){
+            event.setCancelled(true);
+            City city = CityMapper.whoClaimed(event.getBlock().getChunk());
+            for(UUID uuid : city.getBuergerUUID()){
+                if(uuid.equals(event.getPlayer().getUniqueId())){
+                    event.setCancelled(false);
+                    break;
+                }
+            }
+            if(event.isCancelled()){
+                event.getPlayer().sendMessage(Objects.requireNonNull(Skills.getInstance().getConfig().getString("Event.NotInCity.Place")));
             }
         }
     }

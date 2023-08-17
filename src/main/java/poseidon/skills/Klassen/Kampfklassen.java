@@ -3,26 +3,29 @@ package poseidon.skills.Klassen;
 import java.util.ArrayList;
 
 public class Kampfklassen {
-    public static Kampfklassen Unchosed = new Kampfklassen("Unchosed");
-    private final static Kampfklassen Bauer = new Kampfklassen("Soldat");
-    private static final Kampfklassen Mienenarbeiter = new Kampfklassen("Messerwerfer");
-    private static final Kampfklassen Holzfaeller = new Kampfklassen("Techniker");
-    private static final Kampfklassen Fischer = new Kampfklassen("Heiler");
+    public static Kampfklassen Unchosed = new Kampfklassen("Unchosed", 0);
+    private final static Kampfklassen Bauer = new Kampfklassen("Soldat", 20);
+    private static final Kampfklassen Mienenarbeiter = new Kampfklassen("Messerwerfer", 20);
+    private static final Kampfklassen Holzfaeller = new Kampfklassen("Techniker", 20);
+    private static final Kampfklassen Fischer = new Kampfklassen("Heiler", 20);
     private static final ArrayList<Kampfklassen> klasse = new ArrayList<>();
     private final String displayName;
+    private final int baseMana;
 
-    public Kampfklassen(String displayName){
+    public Kampfklassen(String displayName, int baseMana){
         this.displayName = displayName;
+        this.baseMana = baseMana;
     }
 
     public static ArrayList<Kampfklassen> getKlassen() {
         return klasse;
     }
 
-    public static void addKlasse(Kampfklassen klassen){
+    public static boolean addKlasse(Kampfklassen klassen){
         if(!isOnArray(klassen.getDisplayName())) {
-            klasse.add(klassen);
+            return klasse.add(klassen);
         }
+        return false;
     }
     public static boolean isOnArray(String displayName){
         for(Kampfklassen berufklasse : getKlassen()) {
@@ -61,4 +64,7 @@ public class Kampfklassen {
     }
 
 
+    public int getBaseMana() {
+        return baseMana;
+    }
 }

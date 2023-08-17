@@ -3,6 +3,7 @@ package poseidon.skills.UIs;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.ItemStack;
 import poseidon.skills.GUI.BerufSkillGUI;
 import poseidon.skills.GUI.KampfSkillsGUI;
@@ -22,12 +23,12 @@ public class BerufSkillUI extends UI{
 
     @Override
     public String getTitle() {
-        return "KampfSkills";
+        return "BerufSkills";
     }
 
     @Override
     public String getOriginalTitle() {
-        return "KampfSkills";
+        return "BerufSkills";
     }
 
     @Override
@@ -53,5 +54,10 @@ public class BerufSkillUI extends UI{
                 }
             }
         }
+    }
+
+    @Override
+    public void invClose(InventoryCloseEvent event) {
+
     }
 }

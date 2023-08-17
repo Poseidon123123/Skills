@@ -3,6 +3,7 @@ package poseidon.skills.UIs;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
@@ -43,5 +44,7 @@ public abstract class UI extends InventoryView {
     public abstract void setTitle(String title);
 
     public abstract void onClick(InventoryClickEvent event);
+
+    public abstract void invClose(InventoryCloseEvent event);
 
 }

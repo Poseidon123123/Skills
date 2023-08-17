@@ -2,6 +2,7 @@ name: Skills
 version: '${project.version}'
 main: poseidon.skills.Skills
 api-version: 1.19
+author: Poseidon12345
 commands:
   Class:
     description: to choose a Class
@@ -9,12 +10,129 @@ commands:
   Skills:
     description: to bind Skills
     usage: /<command>
-  Sk:
-    description: to bind Skills
-    usage: /<command>
-  ASC:
-    description: to use Skills
+  SK:
+    description: short for Skills
     usage: /<command>
   DB:
     description: Debug
     usage: /<command>
+    permission:
+      Skills.command.DB
+  Make:
+    description: to customise the plugin
+    usage: /<command>
+    permission:
+      Skills.command.Customize
+  setClass:
+    description: to set somebodys class
+    usage: /<command>
+    permission:
+      Skills.command.setClass
+  pay:
+    description: to pay somebody Money
+    usage: /<command>
+    permission:
+      Skills.command.pay
+  offer:
+    description: to offer a trade
+    usage: /<command>
+    permission:
+      Skills.command.Offer
+  City:
+    description: to mange your City
+    usage: /<command>
+    permission:
+      Skills.command.City
+  Farm:
+    description: to mange Farmworlds;
+    usage: /<command>
+    permission:
+      Skills.command.farmwelt
+permissions:
+  Skills.command.*:
+    description: gives all Commandperms
+    default: op
+    children:
+      Skills.command.DB.*: true
+      Skills.command.Customize.*: true
+      Skills.command.pay: true
+      Skills.command.setClass: true
+      Skills.command.City: true
+      Skills.command.farmwelt.create: true
+
+
+  Skills.command.farmwelt:
+    description: to manage the farmwelt
+    default: true
+  Skills.command.farmwelt.create:
+    description: to create a new Farmwelt
+    default: op
+
+  Skills.command.setClass:
+    description: to set somebodys class
+    default: op
+
+  Skills.command.pay:
+    description: to pay somebody money
+    default: true
+
+  Skills.command.City:
+    description: to manage Citys
+    default: true
+
+  Skills.command.Offer:
+     description: to use /offer
+     default: true
+
+  Skills.command.Customize.*:
+    description: to use all of /make
+    default: op
+    children:
+      Skills.command.Customize: true
+      Skills.command.Customize.create: true
+      Skills.command.Customize.remove: true
+  Skills.command.Customize.remove:
+    description: to remove anything
+    default: op
+    children:
+      Skills.command.Customize: true
+  Skills.command.Customize.create:
+    description: to add anything
+    default: op
+    children:
+      Skills.command.Customize: true
+  Skills.command.Customize:
+    description: to use /make
+    default: op
+
+  Skills.command.DB.*:
+    description: gives all DB perms
+    default: op
+    children:
+      Skills.command.DB.dic: true
+      Skills.command.DB.List: true
+      Skills.command.DB.loadList: true
+      Skills.command.DB.deletePlayer: true
+  Skills.command.DB.dic:
+    description: to create the .json
+    default: op
+    children:
+      Skills.command.DB: true
+  Skills.command.DB.List:
+    description: to list everything
+    default: op
+    children:
+      Skills.command.DB: true
+  Skills.command.DB.loadList:
+    description: to load the lists
+    default: op
+    children:
+      Skills.command.DB: true
+  Skills.command.DB.deletePlayer:
+    description: to delete playerinfomation
+    default: op
+    children:
+      Skills.command.DB: true
+  Skills.command.DB:
+    description: Perm to use command
+    default: op

@@ -39,10 +39,11 @@ public class Berufklasse {
     }
 
 
-    public static void addToTest(Berufklasse berufklasse){
+    public static boolean addToTest(Berufklasse berufklasse){
         if(!isOnArray(berufklasse.getDisplayName())){
-            test.add(berufklasse);
+            return test.add(berufklasse);
         }
+        return false;
     }
 
     public static boolean isOnArray(String displayName){
@@ -98,6 +99,10 @@ public class Berufklasse {
         Wooding,
         Farming,
         Fishing
+    }
+
+    public static XPSource getSourceByName(String name){
+        return XPSource.valueOf(name);
     }
 
 }

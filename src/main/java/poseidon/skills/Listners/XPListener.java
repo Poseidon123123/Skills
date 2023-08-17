@@ -1,6 +1,7 @@
 package poseidon.skills.Listners;
 
 import org.bukkit.Material;
+import org.bukkit.block.data.Ageable;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -13,12 +14,13 @@ import poseidon.skills.Klassen.Berufklasse;
 import poseidon.skills.Klassen.KlassChoose;
 import poseidon.skills.Klassen.Players;
 import poseidon.skills.XPMapper;
+import poseidon.skills.XPObjekt;
 
 import java.util.Objects;
 
 import static poseidon.skills.Klassen.Berufklasse.Unchosed;
 import static poseidon.skills.Klassen.Berufklasse.XPSource;
-import static poseidon.skills.XPMapper.*;
+import static poseidon.skills.XPMapper.xpAdd;
 
 
 public class XPListener implements Listener {
@@ -43,8 +45,18 @@ public class XPListener implements Listener {
             if(KlassChoose.getPlayers(event.getPlayer()).getBerufklasse().getSource().equals(XPSource.Fishing)) {
                 Item item = (Item) event.getCaught();
                 assert item != null;
-                if (XPMapper.getFishXP(item.getItemStack().getType()) > 0) {
-                    xpAdd(KlassChoose.getPlayers(event.getPlayer()), getFishXP(item.getItemStack().getType()), true);
+                XPObjekt xpObjekt = XPObjekt.getByMaterial(item.getItemStack().getType());
+                if(xpObjekt == null){
+                    return;
+                }
+                if(!xpObjekt.getXpSource().equals(XPSource.Fishing)){
+                    return;
+                }
+                if (xpObjekt.getXp() > 0) {
+                    xpAdd(KlassChoose.getPlayers(event.getPlayer()), xpObjekt.getXp(), true);
+                }
+                if(xpObjekt.getMoney() > 0){
+                    KlassChoose.getPlayers(event.getPlayer()).addMoney(xpObjekt.getMoney());
                 }
             }
         }
@@ -56,23 +68,28 @@ public class XPListener implements Listener {
         Berufklasse.XPSource xpSource = KlassChoose.getPlayers(player).getBerufklasse().getSource();
         Material m = event.getBlock().getType();
         Players p = KlassChoose.getPlayers(player);
-        switch (xpSource){
-            case Wooding -> {
-                if(getWoodXP(m) > 0){
-                    xpAdd(p, getWoodXP(m), true);
+        XPObjekt xpObjekt = XPObjekt.getByMaterial(m);
+        if(xpObjekt == null){
+            return;
+        }
+        if(xpObjekt.getXpSource() != xpSource){
+            return;
+        }
+        if(xpObjekt.getXp() > 0) {
+            if(event.getBlock() instanceof Ageable ageable){
+                if(ageable.getAge() == ageable.getMaximumAge()){
+                    xpAdd(p, xpObjekt.getXp(), true);
+                    if(xpObjekt.getMoney() > 0){
+                        p.addMoney(xpObjekt.getMoney());
+                    }
                 }
             }
-            case Mining ->{
-                if(getMineXP(m) > 0){
-                    xpAdd(p, getMineXP(m), true);
+            else {
+                xpAdd(p, xpObjekt.getXp(), true);
+                if(xpObjekt.getMoney() > 0){
+                    p.addMoney(xpObjekt.getMoney());
                 }
             }
-            case Farming -> {
-                if(getFarmXP(m) > 0){
-                    xpAdd(p, getFishXP(m), true);
-                }
-            }
-
         }
     }
 

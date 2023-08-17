@@ -2,6 +2,7 @@ package poseidon.skills.UIs;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.ItemStack;
 import poseidon.skills.GUI.SkillGUI;
 
@@ -47,4 +48,8 @@ public class SkillUI extends UI {
         }
     }
 
+    @Override
+    public void invClose(InventoryCloseEvent event) {
+
+    }
 }

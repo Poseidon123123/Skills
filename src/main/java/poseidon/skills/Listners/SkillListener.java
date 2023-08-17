@@ -1,6 +1,5 @@
 package poseidon.skills.Listners;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Fireball;
@@ -11,7 +10,13 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.inventory.ItemStack;
+import poseidon.skills.CustomItems.CustomItem;
+import poseidon.skills.Klassen.Berufklasse;
+import poseidon.skills.Klassen.Kampfklassen;
+import poseidon.skills.Klassen.KlassChoose;
+import poseidon.skills.ManaMap;
 import poseidon.skills.Skills;
+import poseidon.skills.runner.RunSkills;
 import poseidon.skills.skill.BerufSkills;
 import poseidon.skills.skill.KampfSkills;
 import poseidon.skills.skill.SkillMapper;
@@ -21,11 +26,22 @@ import java.util.Objects;
 
 public class SkillListener implements Listener {
 
-    private static void aktivator(PlayerItemHeldEvent event, String command, int cooldown){
+    private static boolean aktivator(PlayerItemHeldEvent event, String command, int cooldown, int mana){
         ItemStack item = event.getPlayer().getInventory().getItem(event.getNewSlot());
-        event.getPlayer().performCommand("ASC " + command);
-        Objects.requireNonNull(item).setAmount(cooldown);
-        cooldown(item, event.getPlayer(),cooldown-1);
+        ManaMap map = new ManaMap(event.getPlayer());
+        boolean a = map.useMana(mana);
+        if(a) {
+            RunSkills runSkills = new RunSkills(event.getPlayer());
+            switch (command) {
+                case "B1" -> runSkills.B1();
+                case "B2" -> runSkills.B2();
+                case "BB1" -> runSkills.BB1();
+                case "BK1" -> runSkills.BK1();
+            }
+            Objects.requireNonNull(item).setAmount(cooldown);
+            cooldown(item, event.getPlayer(), cooldown - 1);
+        }
+        return a;
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -38,8 +54,9 @@ public class SkillListener implements Listener {
             if (item.isSimilar(b.getIcon())) {
                 event.setCancelled(true);
                 if(item.getAmount() == 1) {
-                    aktivator(event, b.getCommand(), b.getCooldown());
-                    event.getPlayer().sendMessage(ChatColor.BLUE + "Der Skill " + b.getName() + " wurde ausgeführt");
+                    if(aktivator(event, b.getCommand(), b.getCooldown(), b.getConsumedMana())) {
+                        event.getPlayer().sendMessage(ChatColor.BLUE + "Der Skill " + b.getName() + " wurde ausgeführt");
+                    }
                 }
                 return;
             }
@@ -48,12 +65,26 @@ public class SkillListener implements Listener {
             if (item.isSimilar(b.getIcon())) {
                 event.setCancelled(true);
                 if(item.getAmount() == 1) {
-                    aktivator(event, b.getCommand(), b.getCooldown());
-                    event.getPlayer().sendMessage(ChatColor.BLUE + "Der Skill " + b.getName() + " wurde ausgeführt");
+                    if(aktivator(event, b.getCommand(), b.getCooldown(), b.getConsumedMana())) {
+                        event.getPlayer().sendMessage(ChatColor.BLUE + "Der Skill " + b.getName() + " wurde ausgeführt");
+                    }
                 }
                 return;
             }
         }
+        if(CustomItem.kampfItemMap.containsKey(item)){
+            Kampfklassen kampfklassen = CustomItem.kampfItemMap.get(item);
+            if(!KlassChoose.getPlayers(event.getPlayer()).getKampfklasse().equals(kampfklassen)){
+                event.getPlayer().dropItem(true);
+            }
+        }
+        if(CustomItem.berufItemMap.containsKey(item)){
+            Berufklasse kampfklassen = CustomItem.berufItemMap.get(item);
+            if(!KlassChoose.getPlayers(event.getPlayer()).getBerufklasse().equals(kampfklassen)){
+                event.getPlayer().dropItem(true);
+            }
+        }
+
 
     }
     @EventHandler(ignoreCancelled = true)
@@ -61,7 +92,6 @@ public class SkillListener implements Listener {
         if(event.getEntity() instanceof Fireball){
             if(Objects.requireNonNull(event.getEntity().getCustomName()).equalsIgnoreCase("SFB")){
                 List<Entity> list = event.getEntity().getNearbyEntities(5,5,5);
-                System.out.println(list);
                 list.forEach(entity -> {
                     if(entity instanceof LivingEntity mob) {
                         mob.setFireTicks(100);
@@ -70,7 +100,6 @@ public class SkillListener implements Listener {
                             mob.setHealth(0);
                         } else {
                             mob.setHealth(health - 5);
-
                         }
                     }
                 });
@@ -86,9 +115,10 @@ public class SkillListener implements Listener {
         }
         while (countDown > 0){
             int delay = countDown * 20;
-            Bukkit.getScheduler().runTaskLaterAsynchronously(Skills.getInstance(), () -> item.setAmount(item.getAmount() - 1), delay);
+            Skills.getInstance().getServer().getScheduler().runTaskLater(Skills.getInstance(), () -> item.setAmount(item.getAmount() - 1), delay);
             countDown--;
         }
+
     }
 
 

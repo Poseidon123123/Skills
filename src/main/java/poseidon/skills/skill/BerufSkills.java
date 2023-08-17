@@ -13,14 +13,16 @@ public class BerufSkills {
     private final int cooldown;
     private final Berufklasse berufklasse;
     private final int neededLevel;
+    private final int consumedMana;
 
-    public BerufSkills(ItemStack icon, String name, String command, int cooldown, Berufklasse berufklasse, int neededLevel){
+    public BerufSkills(ItemStack icon, String name, String command, int cooldown, Berufklasse berufklasse, int neededLevel, int consumedMana){
         this.icon = icon;
         this.name = name;
         this.command = command;
         this.cooldown = cooldown;
         this.berufklasse = berufklasse;
         this.neededLevel = neededLevel;
+        this.consumedMana = consumedMana;
     }
 
     public static ArrayList<BerufSkills> getKlassSkills(Berufklasse berufklasse) {
@@ -66,14 +68,18 @@ public class BerufSkills {
         return name;
     }
 
+    public int getConsumedMana(){
+        return consumedMana;
+    }
+
     public static void addBaseMain(){
-        SkillMapper.addBerufSkill(new BerufSkills(ItemMaker.createGUIItems(Material.FARMLAND, "Pflege"), "Pflanzenpflege", "BB1", 60, Berufklasse.getOfArray("Bauer"), 5));
-        SkillMapper.addBerufSkill(new BerufSkills(ItemMaker.createGUIItems(Material.SHIELD, "Schutz"), "PflanzenSchutz", "BK1", 40, Berufklasse.getOfArray("Bauer"), 10));
-        SkillMapper.addBerufSkill(new BerufSkills(ItemMaker.createGUIItems(Material.FARMLAND, "Pflege"), "TestPflege", "BB1", 60, Berufklasse.getOfArray("Fischer"), 5));
-        SkillMapper.addBerufSkill(new BerufSkills(ItemMaker.createGUIItems(Material.SHIELD, "Schutz"), "Schutzwall", "BK1", 40, Berufklasse.getOfArray("Fischer"), 10));
-        SkillMapper.addBerufSkill(new BerufSkills(ItemMaker.createGUIItems(Material.FARMLAND, "Pflege"), "Pflege", "BB1", 60, Berufklasse.getOfArray("Holzfäller"), 5));
-        SkillMapper.addBerufSkill(new BerufSkills(ItemMaker.createGUIItems(Material.SHIELD, "Schutz"), "Schutz", "BK1", 40, Berufklasse.getOfArray("Holzfäller"), 10));
-        SkillMapper.addBerufSkill(new BerufSkills(ItemMaker.createGUIItems(Material.FARMLAND, "Pflege"), "Pflegebombe", "BB1", 60, Berufklasse.getOfArray("Minenarbeiter"), 5));
-        SkillMapper.addBerufSkill(new BerufSkills(ItemMaker.createGUIItems(Material.SHIELD, "Schutz"), "Schutzbombe", "BK1", 40, Berufklasse.getOfArray("Minenarbeiter"), 10));
+        SkillMapper.addBerufSkill(new BerufSkills(ItemMaker.createGUIItems(Material.FARMLAND, "Pflege"), "Pflanzenpflege", "BB1", 60, Berufklasse.getOfArray("Bauer"), 5, 5));
+        SkillMapper.addBerufSkill(new BerufSkills(ItemMaker.createGUIItems(Material.SHIELD, "Schutz"), "PflanzenSchutz", "BK1", 40, Berufklasse.getOfArray("Bauer"), 10, 10));
+        SkillMapper.addBerufSkill(new BerufSkills(ItemMaker.createGUIItems(Material.FARMLAND, "Pflege"), "TestPflege", "BB1", 60, Berufklasse.getOfArray("Fischer"), 5, 5));
+        SkillMapper.addBerufSkill(new BerufSkills(ItemMaker.createGUIItems(Material.SHIELD, "Schutz"), "Schutzwall", "BK1", 40, Berufklasse.getOfArray("Fischer"), 10, 10));
+        SkillMapper.addBerufSkill(new BerufSkills(ItemMaker.createGUIItems(Material.FARMLAND, "Pflege"), "Pflege", "BB1", 60, Berufklasse.getOfArray("Holzfäller"), 5, 5));
+        SkillMapper.addBerufSkill(new BerufSkills(ItemMaker.createGUIItems(Material.SHIELD, "Schutz"), "Schutz", "BK1", 40, Berufklasse.getOfArray("Holzfäller"), 10, 10));
+        SkillMapper.addBerufSkill(new BerufSkills(ItemMaker.createGUIItems(Material.FARMLAND, "Pflege"), "Pflegebombe", "BB1", 60, Berufklasse.getOfArray("Minenarbeiter"), 5, 5));
+        SkillMapper.addBerufSkill(new BerufSkills(ItemMaker.createGUIItems(Material.SHIELD, "Schutz"), "Schutzbombe", "BK1", 40, Berufklasse.getOfArray("Minenarbeiter"), 10, 5));
     }
 }

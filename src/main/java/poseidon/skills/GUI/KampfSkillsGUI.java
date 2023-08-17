@@ -6,11 +6,12 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import poseidon.skills.Klassen.KlassChoose;
 import poseidon.skills.skill.KampfSkills;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 public class KampfSkillsGUI {
     private static Inventory kampfSkills;
@@ -30,7 +31,9 @@ public class KampfSkillsGUI {
     public static Inventory getKampfSkills(Player  player){
         kampfSkills = Bukkit.createInventory(player, 54, "Skills");
         kampfSkills.setContents(CONTENT);
-        for (KampfSkills item : KampfSkills.getKlassSkills(KlassChoose.getPlayers(player).getKampfklasse()) ) {
+        ArrayList<KampfSkills> b = KampfSkills.getKlassSkills(KlassChoose.getPlayers(player).getKampfklasse());
+        Collections.sort(b, Comparator.comparing(KampfSkills::getNeededLevel));
+        for (KampfSkills item : b) {
             setter(item);
         }
         while (kampfSkills.first(AIR) > 0){
@@ -42,14 +45,6 @@ public class KampfSkillsGUI {
 
     private static void setter(KampfSkills item){
         ItemStack skill = item.getIcon();
-        ItemMeta meta = skill.getItemMeta();
-        ArrayList<String> lore = new ArrayList<>();
-        lore.add("Benötigtes Level: " + item.getNeededLevel());
-        lore.add("Cooldown: " + item.getCooldown());
-        if (meta != null) {
-            meta.setLore(lore);
-        }
-        skill.setItemMeta(meta);
         int i = kampfSkills.first(AIR);
         if (i >= 0) {
             kampfSkills.setItem(i, skill);

@@ -2,6 +2,7 @@ package poseidon.skills.UIs;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.ItemStack;
 import poseidon.skills.GUI.SlotGUI;
 import poseidon.skills.skill.BerufSkills;
@@ -78,5 +79,9 @@ public class KampfSlotUI extends UI{
 
             }
         }
+    }
+
+    @Override
+    public void invClose(InventoryCloseEvent event) {
     }
 }
