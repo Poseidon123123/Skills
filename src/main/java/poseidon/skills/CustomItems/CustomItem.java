@@ -15,12 +15,21 @@ import poseidon.skills.Skills;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 public class CustomItem {
     private static HashMap<String, ItemStack> itemMap = new HashMap<>();
     public static void registerItem(ItemStack itemStack){
         itemMap.put(Objects.requireNonNull(itemStack.getItemMeta()).getDisplayName(),itemStack);
+    }
+    public static void registerItem(ItemStack itemStack, Berufklasse berufklasse){
+        berufItemMap.put(itemStack,berufklasse);
+        registerItem(itemStack);
+    }
+    public static void registerItem(ItemStack itemStack, Kampfklassen kampfklassen){
+        kampfItemMap.put(itemStack,kampfklassen);
+        registerItem(itemStack);
     }
     public static ItemStack getByName(String name){
         return itemMap.get(name);
@@ -32,6 +41,42 @@ public class CustomItem {
     public static HashMap<ItemStack, Kampfklassen> kampfItemMap = new HashMap<>();
     public static HashMap<ShapedRecipe, Berufklasse> shapedRecipeList = new HashMap<>();
     public static HashMap<ShapelessRecipe, Berufklasse> shapelessRecipeList = new HashMap<>();
+    public static boolean isBerufItem(ItemStack item){
+        for (Map.Entry<ItemStack, Berufklasse> entry : berufItemMap.entrySet()) {
+            ItemStack itemStack = entry.getKey();
+            if (itemStack.isSimilar(item)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    public static boolean isKampfItem(ItemStack item){
+        for (Map.Entry<ItemStack, Kampfklassen> entry : kampfItemMap.entrySet()) {
+            ItemStack itemStack = entry.getKey();
+            if (itemStack.isSimilar(item)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    public static Berufklasse getBerufOutOfItem(ItemStack item){
+        for (Map.Entry<ItemStack, Berufklasse> entry : berufItemMap.entrySet()) {
+            ItemStack itemStack = entry.getKey();
+            if (itemStack.isSimilar(item)) {
+                return entry.getValue();
+            }
+        }
+        return Berufklasse.Unchosed;
+    }
+    public static Kampfklassen getKampfOutOfItem(ItemStack item){
+        for (Map.Entry<ItemStack, Kampfklassen> entry : kampfItemMap.entrySet()) {
+            ItemStack itemStack = entry.getKey();
+            if (itemStack.isSimilar(item)) {
+                return entry.getValue();
+            }
+        }
+        return Kampfklassen.Unchosed;
+    }
     public static ItemStack makeExamples(){
         ItemStack a = new ItemStack(Material.DIAMOND_SWORD);
         ItemMeta meta = a.getItemMeta();

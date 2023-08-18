@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Objects;
 
 import static poseidon.skills.XPMapper.evaluateMathExpression;
-
+//TODO Korrekte Aufteilung der Command + TabComplete
 public class Debug implements TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
@@ -95,6 +95,16 @@ public class Debug implements TabExecutor {
                 if(args[1].equalsIgnoreCase("Recipes")){
                     CustomItem.shapedRecipeList.forEach((shapedRecipe, berufklasse) -> player.sendMessage(shapedRecipe.getKey().toString()));
                 }
+                if(args[1].equalsIgnoreCase("KampfItems")){
+                    CustomItem.kampfItemMap.forEach((itemStack, kampfklassen) -> {
+                        player.sendMessage(itemStack.getType() + Objects.requireNonNull(itemStack.getItemMeta()).getDisplayName() + kampfklassen.getDisplayName());
+                    });
+                }
+                if(args[1].equalsIgnoreCase("BerufItems")){
+                    CustomItem.berufItemMap.forEach((itemStack, kampfklassen) -> {
+                        player.sendMessage(itemStack.getType() + Objects.requireNonNull(itemStack.getItemMeta()).getDisplayName() + kampfklassen.getDisplayName());
+                    });
+                }
             }
             if (args[0].equalsIgnoreCase("addList")) {
                 if(!sender.hasPermission("Skills.command.DB.loadList")) {
@@ -104,6 +114,10 @@ public class Debug implements TabExecutor {
                 if(args[1].equalsIgnoreCase("CustomItems")){
                     CustomItem.makeExamples();
                     sender.sendMessage("CustomItems geladen");
+                }
+                if(args[1].equalsIgnoreCase("Recipes")){
+                    CustomItem.example();
+                    sender.sendMessage("Rezepte geladen");
                 }
                 if (args[1].equalsIgnoreCase("KampfSkills")) {
                     KampfSkills.addBaseSkills();
@@ -132,8 +146,8 @@ public class Debug implements TabExecutor {
                     return false;
                 }
                 if(args[1].equalsIgnoreCase("Recipes")){
-                    CustomItem.example();
                     JSONSave.saveRecipes();
+                    sender.sendMessage("Rezepte wurden geschrieben");
                 }
                 if (args[1].equalsIgnoreCase("KampfKlassen")) {
                     JSONSave.kampfKlassenSave();

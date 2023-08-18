@@ -4,14 +4,11 @@ import org.bukkit.Chunk;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.RecipeChoice;
 import org.bukkit.inventory.ShapedRecipe;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.recipe.CraftingBookCategory;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -35,7 +32,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -136,18 +132,20 @@ public class JSONLoad {
                 ItemStack result = JSONSave.itemFrom64(resultData);
                 Berufklasse berufklasse = Berufklasse.getOfArray((String) object.get("beruf"));
                 CraftingBookCategory category = CraftingBookCategory.valueOf((String) object.get("Category"));
-                String[] shape = (String[]) object.get("shape");
-                int b = 0;
+                String shapeString = (String) object.get("shape");
+
+                int b = 1;
                 assert key != null;
                 ShapedRecipe recipe = new ShapedRecipe(key, result);
-                recipe.shape(shape);
+                recipe.shape(shapeString.split(" "));
                 recipe.setCategory(category);
                 while (object.containsKey(b + "char") && object.containsKey(b + "ItemData")){
-                    b++;
-                    Character c = (Character) object.get(b + "char");
+                    String charasString = (String) object.get(b + "char");
+                    char c = charasString.charAt(0);
                     ItemStack itemStack = JSONSave.itemFrom64((String) object.get(b + "ItemData"));
                     RecipeChoice recipeChoice = new RecipeChoice.ExactChoice(itemStack);
                     recipe.setIngredient(c,recipeChoice);
+                    b++;
                 }
                 CustomItem.registerRecipe(recipe,berufklasse);
             } catch (IOException | ParseException e) {
@@ -166,52 +164,17 @@ public class JSONLoad {
             JSONParser parser = new JSONParser();
             try(Reader reader = new FileReader(file)){
                 JSONObject object = (JSONObject) parser.parse(reader);
-                String displayName = (String) object.get("DisplayName");
-                List<String> lore = new ArrayList<>();
-                for (int i = 1; object.containsKey("LoreLine" + i); i++) {
-                    lore.add((String) object.get("LoreLine" + i));
-                }
-                List<ItemFlag> itemFlags = new ArrayList<>();
-                for (int i = 1; object.containsKey("ItemFlag" + i); i++) {
-                    itemFlags.add(ItemFlag.valueOf((String) object.get("ItemFlag" + i)));
-                }
-                long CustomModelData = (long) object.get("CustomModelData");
-                HashMap<Enchantment, Integer> enchantMap = new HashMap<>();
-                for (int i = 1; object.containsKey("enchantment"+ i) && object.containsKey("enchantLevel" + i); i++) {
-                    NamespacedKey a = NamespacedKey.fromString((String) object.get("enchantment"+ i));
-                    long level = (long) object.get("enchantLevel" + i);
-                    Enchantment enchantment = Enchantment.getByKey(a);
-                    enchantMap.put(enchantment, (int) level);
-                }
-                boolean b = (boolean) object.get("breakable");
-                Material m = Material.matchMaterial((String) object.get("Material"));
-                assert m != null;
-                ItemStack itemStack = new ItemStack(m);
-                ItemMeta meta = itemStack.getItemMeta();
-                if (meta != null) {
-                    meta.setCustomModelData((int) CustomModelData);
-                    meta.setLore(lore);
-                    for (ItemFlag i: itemFlags) {
-                        meta.addItemFlags(i);
-                    }
-                    meta.setDisplayName(displayName);
-                    enchantMap.forEach((enchantment, integer) -> meta.addEnchant(enchantment,integer, true));
-                    meta.setUnbreakable(b);
-                }
-                itemStack.setItemMeta(meta);
+                ItemStack itemStack = JSONSave.itemFrom64((String) object.get("Item"));
                 if(object.containsKey("Beruf")){
                     Berufklasse berufklasse = Berufklasse.getOfArray((String) object.get("Beruf"));
-                    if(!berufklasse.equals(Berufklasse.Unchosed)){
-                        CustomItem.berufItemMap.put(itemStack,berufklasse);
-                    }
+                    CustomItem.registerItem(itemStack,berufklasse);
+                    System.out.println("BerufItem");
                 }
                 if(object.containsKey("Kampf")){
                     Kampfklassen kampfklassen = Kampfklassen.getOfArray((String) object.get("Kampf"));
-                    if(!kampfklassen.equals(Kampfklassen.Unchosed)){
-                        CustomItem.kampfItemMap.put(itemStack,kampfklassen);
-                    }
+                    CustomItem.registerItem(itemStack, kampfklassen);
+                    System.out.println("KampfItem");
                 }
-                CustomItem.registerItem(itemStack);
 
             }
             catch (IOException | ParseException e) {

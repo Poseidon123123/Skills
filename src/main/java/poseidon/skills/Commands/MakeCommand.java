@@ -1,5 +1,6 @@
 package poseidon.skills.Commands;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -10,6 +11,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import poseidon.skills.CustomItems.CustomItem;
 import poseidon.skills.Klassen.Berufklasse;
 import poseidon.skills.Klassen.Kampfklassen;
 import poseidon.skills.XPMapper;
@@ -29,7 +31,37 @@ public class MakeCommand implements TabExecutor {
             sender.sendMessage("Du musst ein Spieler sein!");
             return false;
         }
+        if(args.length == 1){
+            if(sender.hasPermission("Skills.command.Customize.create")) {
+                if(args[0].equalsIgnoreCase("newCustomItem")){
+                    if(!player.getInventory().getItemInMainHand().getType().isAir()){
+                        player.sendMessage(ChatColor.RED + "Du musst ein Item mit ItemMeta in der Hand halten!");
+                        return true;
+                    }else {
+                     ItemStack itemStack = player.getInventory().getItemInMainHand();
+                     CustomItem.registerItem(itemStack);
+                     player.sendMessage(ChatColor.GREEN + "Du hast ein CustomItem hinzugefügt");
+                    }
+                }
+            }
+        }
         if(args.length == 2){
+            if(sender.hasPermission("Skills.command.Customize.create")) {
+                if (args[0].equalsIgnoreCase("newCustomItem")) {
+                    if (player.getInventory().getItemInMainHand().getType().isAir()) {
+                        player.sendMessage(ChatColor.RED + "Du musst ein Item mit ItemMeta in der Hand halten!");
+                        return true;
+                    } else if(Berufklasse.isOnArray(args[1])){
+                        ItemStack itemStack = player.getInventory().getItemInMainHand();
+                        CustomItem.registerItem(itemStack, Berufklasse.getOfArray(args[1]));
+                        player.sendMessage(ChatColor.GREEN + "Du hast ein CustomItem dem Beruf " + Berufklasse.getOfArray(args[1]).getDisplayName() + " hinzugefügt");
+                    } else if(Kampfklassen.isOnArray(args[1])){
+                        ItemStack itemStack = player.getInventory().getItemInMainHand();
+                        CustomItem.registerItem(itemStack, Kampfklassen.getOfArray(args[1]));
+                        player.sendMessage(ChatColor.GREEN + "Du hast ein CustomItem der Kampfklasse " + Kampfklassen.getOfArray(args[1]).getDisplayName() + " hinzugefügt");
+                    }
+                }
+            }
             if(sender.hasPermission("Skills.command.Customize.remove")) {
                 if (args[0].equalsIgnoreCase("deleteBeruf")) {
                     if (Berufklasse.isOnArray(args[1])) {

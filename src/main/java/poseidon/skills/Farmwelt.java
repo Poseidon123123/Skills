@@ -31,7 +31,6 @@ public class Farmwelt {
 
     }
     public static WorldCreator farmCreator(boolean neu) {
-
         WorldCreator worldCreator;
         if(neu) {
             worldCreator = new WorldCreator(getRandomString(5));

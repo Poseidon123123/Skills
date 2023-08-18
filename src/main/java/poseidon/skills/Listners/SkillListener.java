@@ -1,13 +1,11 @@
 package poseidon.skills.Listners;
 
 import org.bukkit.ChatColor;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.Fireball;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityExplodeEvent;
+import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.inventory.ItemStack;
 import poseidon.skills.CustomItems.CustomItem;
@@ -43,12 +41,47 @@ public class SkillListener implements Listener {
         }
         return a;
     }
-
+    @EventHandler(ignoreCancelled = true)
+    public void pickUp(EntityPickupItemEvent event){
+        if(!(event.getEntity() instanceof Player player)){
+            return;
+        }
+        ItemStack item = event.getItem().getItemStack();
+        if (item.getType().isAir()) {
+            return;
+        }
+        if(CustomItem.isKampfItem(item)){
+            Kampfklassen kampfklassen = CustomItem.getKampfOutOfItem(item);
+            if(!KlassChoose.getPlayers(player).getKampfklasse().equals(kampfklassen)){
+                event.setCancelled(true);
+            }
+        }
+        if(CustomItem.isBerufItem(item)){
+            Berufklasse kampfklassen = CustomItem.getBerufOutOfItem(item);
+            if(!KlassChoose.getPlayers(player).getBerufklasse().equals(kampfklassen)){
+                event.setCancelled(true);
+            }
+        }
+    }
     @EventHandler(ignoreCancelled = true)
     public void inventoryScroll(PlayerItemHeldEvent event) {
         ItemStack item = event.getPlayer().getInventory().getItem(event.getNewSlot());
-        if (item == null) {
+        if (item == null || item.getType().isAir()) {
             return;
+        }
+        if(CustomItem.isKampfItem(item)){
+            Kampfklassen kampfklassen = CustomItem.getKampfOutOfItem(item);
+            if(!KlassChoose.getPlayers(event.getPlayer()).getKampfklasse().equals(kampfklassen)){
+                event.getPlayer().getInventory().remove(item);
+                event.getPlayer().getWorld().dropItemNaturally(event.getPlayer().getLocation(), item).setPickupDelay(100);
+            }
+        }
+        if(CustomItem.isBerufItem(item)){
+            Berufklasse kampfklassen = CustomItem.getBerufOutOfItem(item);
+            if(!KlassChoose.getPlayers(event.getPlayer()).getBerufklasse().equals(kampfklassen)){
+                event.getPlayer().getInventory().remove(item);
+                event.getPlayer().getWorld().dropItemNaturally(event.getPlayer().getLocation(), item).setPickupDelay(100);
+            }
         }
         for (KampfSkills b : SkillMapper.getKampfSkills()) {
             if (item.isSimilar(b.getIcon())) {
@@ -72,20 +105,6 @@ public class SkillListener implements Listener {
                 return;
             }
         }
-        if(CustomItem.kampfItemMap.containsKey(item)){
-            Kampfklassen kampfklassen = CustomItem.kampfItemMap.get(item);
-            if(!KlassChoose.getPlayers(event.getPlayer()).getKampfklasse().equals(kampfklassen)){
-                event.getPlayer().dropItem(true);
-            }
-        }
-        if(CustomItem.berufItemMap.containsKey(item)){
-            Berufklasse kampfklassen = CustomItem.berufItemMap.get(item);
-            if(!KlassChoose.getPlayers(event.getPlayer()).getBerufklasse().equals(kampfklassen)){
-                event.getPlayer().dropItem(true);
-            }
-        }
-
-
     }
     @EventHandler(ignoreCancelled = true)
     public void explosion(EntityExplodeEvent event){

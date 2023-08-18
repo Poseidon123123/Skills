@@ -37,11 +37,9 @@ public class Kampfklassen {
     }
 
     public static Kampfklassen getOfArray(String displayName) {
-        if (isOnArray(displayName)) {
-            for (Kampfklassen berufklasse: getKlassen()) {
-                if (berufklasse.getDisplayName().equalsIgnoreCase(displayName)) {
-                    return berufklasse;
-                }
+        for (Kampfklassen berufklasse : getKlassen()) {
+            if (berufklasse.getDisplayName().equalsIgnoreCase(displayName)) {
+                return berufklasse;
             }
         }
         return Kampfklassen.Unchosed;

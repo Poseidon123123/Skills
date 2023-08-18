@@ -2,11 +2,9 @@ package poseidon.skills.JSON;
 
 import org.bukkit.Chunk;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.util.io.BukkitObjectInputStream;
 import org.bukkit.util.io.BukkitObjectOutputStream;
 import org.json.simple.JSONObject;
@@ -28,7 +26,10 @@ import poseidon.skills.skill.SkillMapper;
 
 import java.io.*;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
 
 public class JSONSave {
 
@@ -152,12 +153,26 @@ public class JSONSave {
         }
     }
 
+    public static String convertToString(String[] array) {
+        StringBuilder result = new StringBuilder();
+
+        for (int i = 0; i < array.length; i++) {
+            result.append(array[i]);
+            if (i < array.length - 1) {
+                result.append(" ");
+            }
+        }
+
+        return result.toString();
+    }
+
+
     public static void saveRecipes() {
         CustomItem.shapedRecipeList.forEach((shapedRecipe, berufklasse) -> {
             JSONObject object = new JSONObject();
             object.put("beruf", berufklasse.getDisplayName());
             object.put("Category", shapedRecipe.getCategory().toString());
-            object.put("shape", shapedRecipe.getShape());
+            object.put("shape", convertToString(shapedRecipe.getShape()));
             Map<Character, ItemStack> a = shapedRecipe.getIngredientMap();
             int b = 0;
             for (Map.Entry<Character, ItemStack> entry : a.entrySet()) {
@@ -252,12 +267,13 @@ public class JSONSave {
     public static void safeCustomItems() {
         for (Map.Entry<String, ItemStack> entry : CustomItem.getItemMap().entrySet()) {
             ItemStack itemStack = entry.getValue();
-            JSONObject object = saveItemstack(itemStack);
+            JSONObject object = new JSONObject();
+            object.put("Item", itemTo64(itemStack));
             if (CustomItem.berufItemMap.containsKey(itemStack)) {
-                object.put("Beruf", CustomItem.berufItemMap.get(itemStack));
+                object.put("Beruf", CustomItem.berufItemMap.get(itemStack).getDisplayName());
             }
             if (CustomItem.kampfItemMap.containsKey(itemStack)) {
-                object.put("Kampf", CustomItem.kampfItemMap.get(itemStack));
+                object.put("Kampf", CustomItem.kampfItemMap.get(itemStack).getDisplayName());
             }
             try (FileWriter fileWriter = new FileWriter(getCustomItemPath(itemStack))) {
                 fileWriter.write(object.toJSONString());
@@ -267,62 +283,7 @@ public class JSONSave {
         }
     }
 
-    public static JSONObject saveItemstack(ItemStack itemStack) {
-        JSONObject object = new JSONObject();
-        ItemMeta meta = itemStack.getItemMeta();
-        if (meta != null) {
-            int i = 1;
-            for (String s1 : Objects.requireNonNull(meta.getLore())) {
-                object.put("LoreLine" + i, s1);
-                i++;
-            }
-            object.put("DisplayName", meta.getDisplayName());
-            object.put("CustomModelData", meta.getCustomModelData());
-            int i1 = 1;
-            for (ItemFlag itemFlag : meta.getItemFlags()) {
-                object.put("ItemFlag" + i1, itemFlag.name());
-            }
-            int i2 = 1;
-            meta.getEnchants().forEach((enchantment, integer) -> {
-                object.put("enchantment" + i2, enchantment.getKey().toString());
-                object.put("enchantLevel" + i2, integer);
-
-            });
-            object.put("breakable", meta.isUnbreakable());
-            object.put("Material", itemStack.getType().toString());
-        }
-        return object;
-    }
-
-    public static JSONObject saveItemstack(ItemStack itemStack, int b) {
-        JSONObject object = new JSONObject();
-        ItemMeta meta = itemStack.getItemMeta();
-        if (meta != null) {
-            int i = 1;
-            for (String s1 : Objects.requireNonNull(meta.getLore())) {
-                object.put(b + "LoreLine" + i, s1);
-                i++;
-            }
-            object.put(b + "DisplayName", meta.getDisplayName());
-            object.put(b + "CustomModelData", meta.getCustomModelData());
-            int i1 = 1;
-            for (ItemFlag itemFlag : meta.getItemFlags()) {
-                object.put(b + "ItemFlag" + i1, itemFlag.name());
-            }
-            int i2 = 1;
-            meta.getEnchants().forEach((enchantment, integer) -> {
-                object.put(b + "enchantment" + i2, enchantment.getKey().toString());
-                object.put(b + "enchantLevel" + i2, integer);
-
-            });
-            object.put(b + "breakable", meta.isUnbreakable());
-            object.put(b + "Material", itemStack.getType().toString());
-        }
-        return object;
-    }
-
-
-    public static String getPluginpath() {
+        public static String getPluginpath() {
         String Pluginpath = Skills.class.getProtectionDomain().getCodeSource().getLocation().getPath();
         if (Pluginpath.startsWith("/")) {
             Pluginpath = Pluginpath.substring(1);
@@ -330,6 +291,7 @@ public class JSONSave {
         return Pluginpath;
     }
 
+    //TODO Paths neu Organisieren !!
 
     public static String getBerufKlassDic() {
         String dic1Path = Paths.get(getPluginpath()).toFile().getParent();
