@@ -265,15 +265,16 @@ public class JSONSave {
     }
 
     public static void safeCustomItems() {
-        for (Map.Entry<String, ItemStack> entry : CustomItem.getItemMap().entrySet()) {
-            ItemStack itemStack = entry.getValue();
+        for (Map.Entry<String, CustomItem> entry : CustomItem.customItemHashMap.entrySet()) {
+            CustomItem customItem = entry.getValue();
+            ItemStack itemStack = customItem.getCustomItem();
             JSONObject object = new JSONObject();
             object.put("Item", itemTo64(itemStack));
-            if (CustomItem.berufItemMap.containsKey(itemStack)) {
-                object.put("Beruf", CustomItem.berufItemMap.get(itemStack).getDisplayName());
+            if (customItem.isBerufItem()) {
+                object.put("Beruf", customItem.getBerufklasse().getDisplayName());
             }
-            if (CustomItem.kampfItemMap.containsKey(itemStack)) {
-                object.put("Kampf", CustomItem.kampfItemMap.get(itemStack).getDisplayName());
+            if (customItem.isKampfItem()) {
+                object.put("Kampf", customItem.getKampfklassen().getDisplayName());
             }
             try (FileWriter fileWriter = new FileWriter(getCustomItemPath(itemStack))) {
                 fileWriter.write(object.toJSONString());

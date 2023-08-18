@@ -165,15 +165,18 @@ public class JSONLoad {
             try(Reader reader = new FileReader(file)){
                 JSONObject object = (JSONObject) parser.parse(reader);
                 ItemStack itemStack = JSONSave.itemFrom64((String) object.get("Item"));
-                if(object.containsKey("Beruf")){
-                    Berufklasse berufklasse = Berufklasse.getOfArray((String) object.get("Beruf"));
-                    CustomItem.registerItem(itemStack,berufklasse);
-                    System.out.println("BerufItem");
-                }
-                if(object.containsKey("Kampf")){
+                if(object.containsKey("Beruf") && object.containsKey("Kampf")){
                     Kampfklassen kampfklassen = Kampfklassen.getOfArray((String) object.get("Kampf"));
-                    CustomItem.registerItem(itemStack, kampfklassen);
-                    System.out.println("KampfItem");
+                    Berufklasse berufklasse = Berufklasse.getOfArray((String) object.get("Beruf"));
+                    CustomItem.registerItem(new CustomItem(itemStack,kampfklassen, berufklasse));
+                }
+                else  if(object.containsKey("Beruf")){
+                    Berufklasse berufklasse = Berufklasse.getOfArray((String) object.get("Beruf"));
+                    CustomItem.registerItem(new CustomItem(itemStack,berufklasse));
+                }
+                else if(object.containsKey("Kampf")){
+                    Kampfklassen kampfklassen = Kampfklassen.getOfArray((String) object.get("Kampf"));
+                    CustomItem.registerItem(new CustomItem(itemStack,kampfklassen));
                 }
 
             }

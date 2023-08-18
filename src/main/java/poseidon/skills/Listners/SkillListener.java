@@ -50,14 +50,15 @@ public class SkillListener implements Listener {
         if (item.getType().isAir()) {
             return;
         }
-        if(CustomItem.isKampfItem(item)){
-            Kampfklassen kampfklassen = CustomItem.getKampfOutOfItem(item);
+        CustomItem customItem = CustomItem.getByName(Objects.requireNonNull(item.getItemMeta()).getDisplayName());
+        if(customItem.isKampfItem()){
+            Kampfklassen kampfklassen = customItem.getKampfklassen();
             if(!KlassChoose.getPlayers(player).getKampfklasse().equals(kampfklassen)){
                 event.setCancelled(true);
             }
         }
-        if(CustomItem.isBerufItem(item)){
-            Berufklasse kampfklassen = CustomItem.getBerufOutOfItem(item);
+        if(customItem.isBerufItem()){
+            Berufklasse kampfklassen = customItem.getBerufklasse();
             if(!KlassChoose.getPlayers(player).getBerufklasse().equals(kampfklassen)){
                 event.setCancelled(true);
             }
@@ -69,15 +70,16 @@ public class SkillListener implements Listener {
         if (item == null || item.getType().isAir()) {
             return;
         }
-        if(CustomItem.isKampfItem(item)){
-            Kampfklassen kampfklassen = CustomItem.getKampfOutOfItem(item);
+        CustomItem customItem = CustomItem.getByName(Objects.requireNonNull(item.getItemMeta()).getDisplayName());
+        if(customItem.isKampfItem()){
+            Kampfklassen kampfklassen = customItem.getKampfklassen();
             if(!KlassChoose.getPlayers(event.getPlayer()).getKampfklasse().equals(kampfklassen)){
                 event.getPlayer().getInventory().remove(item);
                 event.getPlayer().getWorld().dropItemNaturally(event.getPlayer().getLocation(), item).setPickupDelay(100);
             }
         }
-        if(CustomItem.isBerufItem(item)){
-            Berufklasse kampfklassen = CustomItem.getBerufOutOfItem(item);
+        if(customItem.isBerufItem()){
+            Berufklasse kampfklassen = customItem.getBerufklasse();
             if(!KlassChoose.getPlayers(event.getPlayer()).getBerufklasse().equals(kampfklassen)){
                 event.getPlayer().getInventory().remove(item);
                 event.getPlayer().getWorld().dropItemNaturally(event.getPlayer().getLocation(), item).setPickupDelay(100);

@@ -37,18 +37,8 @@ public class Debug implements TabExecutor {
         Player player = (Player) sender;
         if(args.length == 1) {
             if (args[0].equalsIgnoreCase("getCustomItems")) {
-                CustomItem.getItemMap().forEach((s, itemStack) -> player.getInventory().addItem(itemStack));
-            }
-            if(args[0].equalsIgnoreCase("DBCustomItems")){
-                System.out.println("KampfMap");
-                CustomItem.kampfItemMap.forEach((itemStack, kampfklassen) -> {
-                    System.out.println(itemStack);
-                    System.out.println(kampfklassen.getDisplayName());
-                });
-                System.out.println("BerufMap");
-                CustomItem.berufItemMap.forEach((itemStack, berufklasse) -> {
-                    System.out.println(itemStack);
-                    System.out.println(berufklasse.getDisplayName());
+                CustomItem.customItemHashMap.forEach((s, customItem) -> {
+                    player.getInventory().addItem(customItem.getCustomItem());
                 });
             }
         }
@@ -95,14 +85,12 @@ public class Debug implements TabExecutor {
                 if(args[1].equalsIgnoreCase("Recipes")){
                     CustomItem.shapedRecipeList.forEach((shapedRecipe, berufklasse) -> player.sendMessage(shapedRecipe.getKey().toString()));
                 }
-                if(args[1].equalsIgnoreCase("KampfItems")){
-                    CustomItem.kampfItemMap.forEach((itemStack, kampfklassen) -> {
-                        player.sendMessage(itemStack.getType() + Objects.requireNonNull(itemStack.getItemMeta()).getDisplayName() + kampfklassen.getDisplayName());
-                    });
-                }
-                if(args[1].equalsIgnoreCase("BerufItems")){
-                    CustomItem.berufItemMap.forEach((itemStack, kampfklassen) -> {
-                        player.sendMessage(itemStack.getType() + Objects.requireNonNull(itemStack.getItemMeta()).getDisplayName() + kampfklassen.getDisplayName());
+                if(args[1].equalsIgnoreCase("CustomItems")){
+                    CustomItem.customItemHashMap.forEach((s, customItem) -> {
+                        player.sendMessage(s);
+                        player.sendMessage(customItem.getCustomItem().toString());
+                        player.sendMessage(customItem.getKampfklassen().getDisplayName());
+                        player.sendMessage(customItem.getBerufklasse().getDisplayName());
                     });
                 }
             }

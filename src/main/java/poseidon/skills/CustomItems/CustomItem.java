@@ -15,68 +15,57 @@ import poseidon.skills.Skills;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 public class CustomItem {
-    private static HashMap<String, ItemStack> itemMap = new HashMap<>();
-    public static void registerItem(ItemStack itemStack){
-        itemMap.put(Objects.requireNonNull(itemStack.getItemMeta()).getDisplayName(),itemStack);
+    private final ItemStack CustomItem;
+    private final Berufklasse berufklasse;
+    private final Kampfklassen kampfklassen;
+    public CustomItem(ItemStack customItem){
+        this.CustomItem = customItem;
+        this.kampfklassen = null;
+        this.berufklasse = null;
     }
-    public static void registerItem(ItemStack itemStack, Berufklasse berufklasse){
-        berufItemMap.put(itemStack,berufklasse);
-        registerItem(itemStack);
+    public CustomItem(ItemStack customItem, Kampfklassen kampfklassen) {
+        this.CustomItem = customItem;
+        this.kampfklassen = kampfklassen;
+        this.berufklasse = null;
     }
-    public static void registerItem(ItemStack itemStack, Kampfklassen kampfklassen){
-        kampfItemMap.put(itemStack,kampfklassen);
-        registerItem(itemStack);
+    public CustomItem(ItemStack customItem, Berufklasse berufklasse){
+        this.CustomItem = customItem;
+        this.kampfklassen = null;
+        this.berufklasse = berufklasse;
     }
-    public static ItemStack getByName(String name){
-        return itemMap.get(name);
+    public CustomItem(ItemStack customItem, Kampfklassen kampfklassen, Berufklasse berufklasse){
+        this.CustomItem = customItem;
+        this.kampfklassen = kampfklassen;
+        this.berufklasse = berufklasse;
     }
-    public static HashMap<String, ItemStack> getItemMap(){
-        return itemMap;
+    public ItemStack getCustomItem(){
+        return this.CustomItem;
     }
-    public static HashMap<ItemStack, Berufklasse> berufItemMap = new HashMap<>();
-    public static HashMap<ItemStack, Kampfklassen> kampfItemMap = new HashMap<>();
+    public Berufklasse getBerufklasse(){
+        return this.berufklasse;
+    }
+    public Kampfklassen getKampfklassen() {
+        return kampfklassen;
+    }
+    public boolean isKampfItem(){
+        return kampfklassen != null;
+    }
+    public boolean isBerufItem(){
+        return berufklasse != null;
+    }
+
+    public static HashMap<String, CustomItem> customItemHashMap = new HashMap<>();
+    public static void registerItem(CustomItem customItem){
+        customItemHashMap.put(Objects.requireNonNull(customItem.getCustomItem().getItemMeta()).getDisplayName(),customItem);
+    }
+    public static CustomItem getByName(String name){
+        return customItemHashMap.get(name);
+    }
     public static HashMap<ShapedRecipe, Berufklasse> shapedRecipeList = new HashMap<>();
     public static HashMap<ShapelessRecipe, Berufklasse> shapelessRecipeList = new HashMap<>();
-    public static boolean isBerufItem(ItemStack item){
-        for (Map.Entry<ItemStack, Berufklasse> entry : berufItemMap.entrySet()) {
-            ItemStack itemStack = entry.getKey();
-            if (itemStack.isSimilar(item)) {
-                return true;
-            }
-        }
-        return false;
-    }
-    public static boolean isKampfItem(ItemStack item){
-        for (Map.Entry<ItemStack, Kampfklassen> entry : kampfItemMap.entrySet()) {
-            ItemStack itemStack = entry.getKey();
-            if (itemStack.isSimilar(item)) {
-                return true;
-            }
-        }
-        return false;
-    }
-    public static Berufklasse getBerufOutOfItem(ItemStack item){
-        for (Map.Entry<ItemStack, Berufklasse> entry : berufItemMap.entrySet()) {
-            ItemStack itemStack = entry.getKey();
-            if (itemStack.isSimilar(item)) {
-                return entry.getValue();
-            }
-        }
-        return Berufklasse.Unchosed;
-    }
-    public static Kampfklassen getKampfOutOfItem(ItemStack item){
-        for (Map.Entry<ItemStack, Kampfklassen> entry : kampfItemMap.entrySet()) {
-            ItemStack itemStack = entry.getKey();
-            if (itemStack.isSimilar(item)) {
-                return entry.getValue();
-            }
-        }
-        return Kampfklassen.Unchosed;
-    }
     public static ItemStack makeExamples(){
         ItemStack a = new ItemStack(Material.DIAMOND_SWORD);
         ItemMeta meta = a.getItemMeta();
@@ -87,15 +76,14 @@ public class CustomItem {
         meta.addItemFlags(ItemFlag.HIDE_ENCHANTS, ItemFlag.HIDE_ATTRIBUTES);
         meta.setCustomModelData(1);
         a.setItemMeta(meta);
-        registerItem(a);
+        registerItem(new CustomItem(a));
         ItemStack b = new ItemStack(Material.SHIELD);
         ItemMeta meta1 = b.getItemMeta();
         assert meta1 != null;
         meta1.setDisplayName("§4Messerschild");
         meta1.setLore(List.of("§9Nur für die geübetesten Messerwerfer"));
         b.setItemMeta(meta1);
-        registerItem(b);
-        kampfItemMap.put(b, Kampfklassen.getOfArray("Messerwerfer"));
+        registerItem(new CustomItem(b,Kampfklassen.getOfArray("Messerwerfer")));
         return a;
     }
 
@@ -114,22 +102,14 @@ public class CustomItem {
 
     public static Berufklasse getBerufRecipe(ShapedRecipe key){
         if(shapedRecipeList.containsKey(key)){
-            Berufklasse berufklasse = shapedRecipeList.get(key);
-            if(berufklasse.equals(Berufklasse.Unchosed)){
-                return null;
-            }
-            return berufklasse;
+            return shapedRecipeList.get(key);
         }
         return null;
     }
 
     public static Berufklasse getBerufRecipe(ShapelessRecipe key){
         if(shapelessRecipeList.containsKey(key)){
-            Berufklasse berufklasse = shapelessRecipeList.get(key);
-            if(berufklasse.equals(Berufklasse.Unchosed)){
-                return null;
-            }
-            return berufklasse;
+            return shapelessRecipeList.get(key);
         }
         return null;
     }
@@ -143,8 +123,8 @@ public class CustomItem {
         recipe.setIngredient('A', Material.AIR);
         registerRecipe(recipe, Berufklasse.Unchosed);
     }
-    //TODO MAKE EXAMPLE RECIPE
-    //TODO ABFRAGE für berufsklasse
+    //TODO MAKE EXAMPLE RECIPE Shapless
+    //TODO ABFRAGE für berufsklasse Kampfklassen
 
 
 
