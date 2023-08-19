@@ -1,17 +1,12 @@
 package poseidon.skills.CustomItems;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.ShapedRecipe;
-import org.bukkit.inventory.ShapelessRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
 import poseidon.skills.Klassen.Berufklasse;
 import poseidon.skills.Klassen.Kampfklassen;
-import poseidon.skills.Skills;
 
 import java.util.HashMap;
 import java.util.List;
@@ -19,21 +14,17 @@ import java.util.Objects;
 
 public class CustomItem {
     private final ItemStack CustomItem;
-    private final Berufklasse berufklasse;
-    private final Kampfklassen kampfklassen;
+    private Berufklasse berufklasse = Berufklasse.Unchosed;
+    private Kampfklassen kampfklassen = Kampfklassen.Unchosed;
     public CustomItem(ItemStack customItem){
         this.CustomItem = customItem;
-        this.kampfklassen = null;
-        this.berufklasse = null;
     }
     public CustomItem(ItemStack customItem, Kampfklassen kampfklassen) {
         this.CustomItem = customItem;
         this.kampfklassen = kampfklassen;
-        this.berufklasse = null;
     }
     public CustomItem(ItemStack customItem, Berufklasse berufklasse){
         this.CustomItem = customItem;
-        this.kampfklassen = null;
         this.berufklasse = berufklasse;
     }
     public CustomItem(ItemStack customItem, Kampfklassen kampfklassen, Berufklasse berufklasse){
@@ -51,10 +42,10 @@ public class CustomItem {
         return kampfklassen;
     }
     public boolean isKampfItem(){
-        return kampfklassen != null;
+        return kampfklassen != Kampfklassen.Unchosed;
     }
     public boolean isBerufItem(){
-        return berufklasse != null;
+        return berufklasse != Berufklasse.Unchosed;
     }
 
     public static HashMap<String, CustomItem> customItemHashMap = new HashMap<>();
@@ -64,8 +55,8 @@ public class CustomItem {
     public static CustomItem getByName(String name){
         return customItemHashMap.get(name);
     }
-    public static HashMap<ShapedRecipe, Berufklasse> shapedRecipeList = new HashMap<>();
-    public static HashMap<ShapelessRecipe, Berufklasse> shapelessRecipeList = new HashMap<>();
+
+
     public static ItemStack makeExamples(){
         ItemStack a = new ItemStack(Material.DIAMOND_SWORD);
         ItemMeta meta = a.getItemMeta();
@@ -87,42 +78,6 @@ public class CustomItem {
         return a;
     }
 
-    public static void registerRecipe(ShapedRecipe recipe, Berufklasse berufklasse){
-        if(Bukkit.getRecipe(recipe.getKey()) == null) {
-            Bukkit.getServer().addRecipe(recipe);
-            shapedRecipeList.put(recipe, berufklasse);
-        }
-    }
-    public static void registerRecipe(ShapelessRecipe recipe, Berufklasse berufklasse){
-        if(Bukkit.getRecipe(recipe.getKey()) == null) {
-            shapelessRecipeList.put(recipe, berufklasse);
-            Bukkit.getServer().addRecipe(recipe);
-        }
-    }
-
-    public static Berufklasse getBerufRecipe(ShapedRecipe key){
-        if(shapedRecipeList.containsKey(key)){
-            return shapedRecipeList.get(key);
-        }
-        return null;
-    }
-
-    public static Berufklasse getBerufRecipe(ShapelessRecipe key){
-        if(shapelessRecipeList.containsKey(key)){
-            return shapelessRecipeList.get(key);
-        }
-        return null;
-    }
-
-    public static void example(){
-        ItemStack itemStack = makeExamples();
-        ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(Skills.getInstance(),"Test"), itemStack);
-        recipe.shape("AEA","AEA","SSS");
-        recipe.setIngredient('E', Material.EMERALD);
-        recipe.setIngredient('S', Material.STICK);
-        recipe.setIngredient('A', Material.AIR);
-        registerRecipe(recipe, Berufklasse.Unchosed);
-    }
     //TODO MAKE EXAMPLE RECIPE Shapless
     //TODO ABFRAGE für berufsklasse Kampfklassen
 

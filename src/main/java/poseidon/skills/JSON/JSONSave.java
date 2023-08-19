@@ -10,6 +10,8 @@ import org.bukkit.util.io.BukkitObjectOutputStream;
 import org.json.simple.JSONObject;
 import org.yaml.snakeyaml.external.biz.base64Coder.Base64Coder;
 import poseidon.skills.CustomItems.CustomItem;
+import poseidon.skills.CustomItems.CustomShapedRecipe;
+import poseidon.skills.CustomItems.CustomShapelessRecipe;
 import poseidon.skills.Klassen.Berufklasse;
 import poseidon.skills.Klassen.Kampfklassen;
 import poseidon.skills.Klassen.KlassChoose;
@@ -47,9 +49,9 @@ public class JSONSave {
         new File(getFarmingPath()).mkdirs();
         new File(getMobsPath()).mkdirs();
         new File((getCityDic())).mkdirs();
-        new File(getCustomRecipeDic()).mkdirs();
+        new File(getCustomShapedRecipeDic()).mkdirs();
         new File(getCustomItemListDic()).mkdirs();
-        new File(getCustomRecipe1Dic()).mkdirs();
+        new File(getCustomShapelessRecipeDic()).mkdirs();
     }
 
     public static void playerSave(Player player) {
@@ -166,14 +168,56 @@ public class JSONSave {
         return result.toString();
     }
 
-
-    public static void saveRecipes() {
-        CustomItem.shapedRecipeList.forEach((shapedRecipe, berufklasse) -> {
+    public static void saveShapelessRecipes(){
+        CustomShapelessRecipe.getCustomShapedRecipeHashMap().forEach((key, shapelessRecipe) -> {
             JSONObject object = new JSONObject();
-            object.put("beruf", berufklasse.getDisplayName());
-            object.put("Category", shapedRecipe.getCategory().toString());
-            object.put("shape", convertToString(shapedRecipe.getShape()));
-            Map<Character, ItemStack> a = shapedRecipe.getIngredientMap();
+            if (shapelessRecipe.getBerufklasse() != Berufklasse.Unchosed) {
+                object.put("beruf", shapelessRecipe.getBerufklasse().getDisplayName());
+            }
+            if (shapelessRecipe.getKampfklassen() != Kampfklassen.Unchosed) {
+                object.put("kampf", shapelessRecipe.getKampfklassen().getDisplayName());
+            }
+            if(shapelessRecipe.getNeededBerufLevel() > 0){
+                object.put("berufLevel", shapelessRecipe.getNeededBerufLevel());
+            }
+            if(shapelessRecipe.getNeededKampfLevel() > 0){
+                object.put("kampfLevel", shapelessRecipe.getNeededKampfLevel());
+            }
+            int b = 0;
+            for(ItemStack itemStack : shapelessRecipe.getRecipe().getIngredientList()){
+                b++;
+                object.put(b + "ItemData", itemTo64(itemStack));
+            }
+            object.put("Category", shapelessRecipe.getRecipe().getCategory().toString());
+            object.put("Key", key.toString());
+            object.put("ResultItemData", itemTo64(shapelessRecipe.getRecipe().getResult()));
+            try (FileWriter file = new FileWriter(getCustomShapelessRecipePath(shapelessRecipe.getRecipe()))){
+                file.write(object.toJSONString());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+
+    public static void saveShapedRecipes() {
+        CustomShapedRecipe.getCustomShapedRecipeHashMap().forEach((namespacedKey, shapedRecipe) -> {
+            JSONObject object = new JSONObject();
+            if (shapedRecipe.getBerufklasse() != Berufklasse.Unchosed) {
+                object.put("beruf", shapedRecipe.getBerufklasse().getDisplayName());
+            }
+            if (shapedRecipe.getKampfklassen() != Kampfklassen.Unchosed) {
+                object.put("kampf", shapedRecipe.getKampfklassen().getDisplayName());
+            }
+            if(shapedRecipe.getNeededBerufLevel() > 0){
+                object.put("berufLevel", shapedRecipe.getNeededBerufLevel());
+            }
+            if(shapedRecipe.getNeededKampfLevel() > 0){
+                object.put("kampfLevel", shapedRecipe.getNeededKampfLevel());
+            }
+            object.put("Category", shapedRecipe.getRecipe().getCategory().toString());
+            object.put("shape", convertToString(shapedRecipe.getRecipe().getShape()));
+            Map<Character, ItemStack> a = shapedRecipe.getRecipe().getIngredientMap();
             int b = 0;
             for (Map.Entry<Character, ItemStack> entry : a.entrySet()) {
                 Character character = entry.getKey();
@@ -182,12 +226,10 @@ public class JSONSave {
                 object.put(b + "char", character.toString());
                 object.put(b + "ItemData", itemTo64(itemStack));
             }
-            object.put("Key", shapedRecipe.getKey().toString());
-            ItemStack item = shapedRecipe.getResult();
-            object.put("ResultItemData", itemTo64(item));
-            try (FileWriter file = new FileWriter(getCustomRecipePath(shapedRecipe))) {
+            object.put("Key", namespacedKey.toString());
+            object.put("ResultItemData", itemTo64(shapedRecipe.getRecipe().getResult()));
+            try (FileWriter file = new FileWriter(getCustomRecipePath(shapedRecipe.getRecipe()))) {
                 file.write(object.toJSONString());
-
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -363,11 +405,11 @@ public class JSONSave {
         return getCustomItemDic() + "/Items/";
     }
 
-    public static String getCustomRecipeDic() {
+    public static String getCustomShapedRecipeDic() {
         return getCustomItemDic() + "/ShapedRecipes/";
     }
 
-    public static String getCustomRecipe1Dic() {
+    public static String getCustomShapelessRecipeDic() {
         return getCustomItemDic() + "/ShapelessRecipes/";
     }
 
@@ -400,12 +442,12 @@ public class JSONSave {
         return getCustomItemListDic() + "/" + Objects.requireNonNull(itemStack.getItemMeta()).getDisplayName() + ".json";
     }
 
-    public static String getCustomRecipePath(ShapelessRecipe recipe) {
-        return getCustomRecipe1Dic() + "/" + recipe.getKey() + ".json";
+    public static String getCustomShapelessRecipePath(ShapelessRecipe recipe) {
+        return getCustomShapelessRecipeDic() + "/" + recipe.getKey().getKey() + ".json";
     }
 
     public static String getCustomRecipePath(ShapedRecipe recipe) {
-        return getCustomRecipeDic() + "/" + recipe.getKey().getKey() + ".json";
+        return getCustomShapedRecipeDic() + "/" + recipe.getKey().getKey() + ".json";
     }
 
 

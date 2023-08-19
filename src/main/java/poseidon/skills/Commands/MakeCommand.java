@@ -39,7 +39,7 @@ public class MakeCommand implements TabExecutor {
                         return true;
                     }else {
                      ItemStack itemStack = player.getInventory().getItemInMainHand();
-                     CustomItem.registerItem(itemStack);
+                     CustomItem.registerItem(new CustomItem(itemStack));
                      player.sendMessage(ChatColor.GREEN + "Du hast ein CustomItem hinzugefügt");
                     }
                 }
@@ -53,11 +53,11 @@ public class MakeCommand implements TabExecutor {
                         return true;
                     } else if(Berufklasse.isOnArray(args[1])){
                         ItemStack itemStack = player.getInventory().getItemInMainHand();
-                        CustomItem.registerItem(itemStack, Berufklasse.getOfArray(args[1]));
+                        CustomItem.registerItem(new CustomItem(itemStack, Berufklasse.getOfArray(args[1])));
                         player.sendMessage(ChatColor.GREEN + "Du hast ein CustomItem dem Beruf " + Berufklasse.getOfArray(args[1]).getDisplayName() + " hinzugefügt");
                     } else if(Kampfklassen.isOnArray(args[1])){
                         ItemStack itemStack = player.getInventory().getItemInMainHand();
-                        CustomItem.registerItem(itemStack, Kampfklassen.getOfArray(args[1]));
+                        CustomItem.registerItem(new CustomItem(itemStack, Kampfklassen.getOfArray(args[1])));
                         player.sendMessage(ChatColor.GREEN + "Du hast ein CustomItem der Kampfklasse " + Kampfklassen.getOfArray(args[1]).getDisplayName() + " hinzugefügt");
                     }
                 }
@@ -106,56 +106,65 @@ public class MakeCommand implements TabExecutor {
                 sender.sendMessage("Du hast keine Berechtigung dazu");
             }
         }
-        if(args.length == 3){
-            if(sender.hasPermission("Skills.command.Customize.create")) {
-                if (args[0].equalsIgnoreCase("newBeruf")) {
-                    Berufklasse.XPSource b = Berufklasse.XPSource.None;
-                    for (Berufklasse.XPSource a : Berufklasse.XPSource.values()) {
-                        if (a.name().equalsIgnoreCase(args[2])) {
-                            b = a;
-                            break;
+        if(args.length == 3) {
+            if (sender.hasPermission("Skills.command.Customize.create")) {
+                if (args[0].equalsIgnoreCase("newCustomItem")) {
+                    if (player.getInventory().getItemInMainHand().getType().isAir()) {
+                        player.sendMessage(ChatColor.RED + "Du musst ein Item mit ItemMeta in der Hand halten!");
+                        return true;
+                    } else if (Berufklasse.isOnArray(args[1]) && Kampfklassen.isOnArray(args[2])) {
+                        ItemStack itemStack = player.getInventory().getItemInMainHand();
+                        CustomItem.registerItem(new CustomItem(itemStack, Kampfklassen.getOfArray(args[2]), Berufklasse.getOfArray(args[1])));
+                        player.sendMessage(ChatColor.GREEN + "Du hast ein CustomItem dem Beruf " + Berufklasse.getOfArray(args[1]).getDisplayName() + " und der Kampfklasse + " + Kampfklassen.getOfArray(args[2]) + " hinzugefügt");
+                    }
+                    if (args[0].equalsIgnoreCase("newBeruf")) {
+                        Berufklasse.XPSource b = Berufklasse.XPSource.None;
+                        for (Berufklasse.XPSource a : Berufklasse.XPSource.values()) {
+                            if (a.name().equalsIgnoreCase(args[2])) {
+                                b = a;
+                                break;
+                            }
+                        }
+                        if (b.equals(Berufklasse.XPSource.None)) {
+                            sender.sendMessage("Keine XPSource erkennt, None wurdezugeordnet");
+                        }
+                        Berufklasse berufklasse = new Berufklasse(args[1], b);
+                        if (Berufklasse.addToTest(berufklasse)) {
+                            sender.sendMessage("Die Berufklasse " + berufklasse.getDisplayName() + " wurde hinzugefügt");
                         }
                     }
-                    if (b.equals(Berufklasse.XPSource.None)) {
-                        sender.sendMessage("Keine XPSource erkennt, None wurdezugeordnet");
-                    }
-                    Berufklasse berufklasse = new Berufklasse(args[1], b);
-                    if (Berufklasse.addToTest(berufklasse)) {
-                        sender.sendMessage("Die Berufklasse " + berufklasse.getDisplayName() + " wurde hinzugefügt");
-                    }
-                }
-                if (args[0].equalsIgnoreCase("newKampf")) {
-                    Kampfklassen kampfklassen = new Kampfklassen(args[1], stringToInt(args[2],player));
-                    if (Kampfklassen.addKlasse(kampfklassen)) {
-                        sender.sendMessage("Die Kampfklasse " + kampfklassen.getDisplayName() + " wurde hinzugefügt");
-                    }
+                    if (args[0].equalsIgnoreCase("newKampf")) {
+                        Kampfklassen kampfklassen = new Kampfklassen(args[1], stringToInt(args[2], player));
+                        if (Kampfklassen.addKlasse(kampfklassen)) {
+                            sender.sendMessage("Die Kampfklasse " + kampfklassen.getDisplayName() + " wurde hinzugefügt");
+                        }
 
-                }
-                if(args[0].equalsIgnoreCase("newMobXP")){
-                    EntityType entityType = EntityType.ZOMBIE;
-                    boolean changed = false;
-                    for(EntityType entityType1 : EntityType.values()){
-                        if(entityType1.equals(EntityType.UNKNOWN)){
-                            continue;
-                        }
-                        if(entityType1.getTranslationKey().equals(args[1])){
-                            entityType = entityType1;
-                            changed = true;
-                        }
                     }
-                    if(!changed){
-                        player.sendMessage("Keinen Typen erkannt Zombie wurde standartmäßig gesetzt");
+                    if (args[0].equalsIgnoreCase("newMobXP")) {
+                        EntityType entityType = EntityType.ZOMBIE;
+                        boolean changed = false;
+                        for (EntityType entityType1 : EntityType.values()) {
+                            if (entityType1.equals(EntityType.UNKNOWN)) {
+                                continue;
+                            }
+                            if (entityType1.getTranslationKey().equals(args[1])) {
+                                entityType = entityType1;
+                                changed = true;
+                            }
+                        }
+                        if (!changed) {
+                            player.sendMessage("Keinen Typen erkannt Zombie wurde standartmäßig gesetzt");
+                        }
+                        int xp = stringToInt(args[2], player);
+                        XPMapper.addMob(entityType, xp);
                     }
-                    int xp = stringToInt(args[2],player);
-                    XPMapper.addMob(entityType, xp);
+                } else {
+                    sender.sendMessage("Du hast keine Berechtigung dafür");
                 }
-            }
-            else {
-                sender.sendMessage("Du hast keine Berechtigung dafür");
             }
         }
-        if(args.length == 5) {
-            if(sender.hasPermission("Skills.command.Customize.create")) {
+        if (args.length == 5) {
+            if (sender.hasPermission("Skills.command.Customize.create")) {
                 if (args[0].equalsIgnoreCase("newXPObjekt")) {
                     Material m = Material.getMaterial(args[1]);
                     if (m == null) {
@@ -165,57 +174,55 @@ public class MakeCommand implements TabExecutor {
                     Berufklasse berufklasse = Berufklasse.Unchosed;
                     if (Berufklasse.isOnArray(args[2])) {
                         berufklasse = Berufklasse.getOfArray(args[2]);
-                    }
-                    else {
+                    } else {
                         sender.sendMessage("Beruf nicht erkannt Unchosed gewählt");
                     }
-                    int xp = stringToInt(args[3],player);
-                    int money = stringToInt(args[4],player);
+                    int xp = stringToInt(args[3], player);
+                    int money = stringToInt(args[4], player);
                     XPObjekt.register(new XPObjekt(m, berufklasse.getSource(), xp, money));
                 }
-            }
-            else {
+            } else {
                 sender.sendMessage("Du hast keine Berechtigung dafür");
             }
         }
-        if(args.length == 8) {
-            if(sender.hasPermission("Skills.command.Customize.create")) {
-                if (args[0].equalsIgnoreCase("newBerufSkill")) {
-                    Material m = Material.getMaterial(args[1]);
-                    if (m == null) {
-                        m = Material.DIRT;
-                        sender.sendMessage("Material ungültig Dirt als Icon genommen!");
+        if (args.length == 8) {
+                if (sender.hasPermission("Skills.command.Customize.create")) {
+                    if (args[0].equalsIgnoreCase("newBerufSkill")) {
+                        Material m = Material.getMaterial(args[1]);
+                        if (m == null) {
+                            m = Material.DIRT;
+                            sender.sendMessage("Material ungültig Dirt als Icon genommen!");
+                        }
+                        int cooldown = stringToInt(args[4], player);
+                        int neededLevel = stringToInt(args[6], player);
+                        int consumedMana = stringToInt(args[7], player);
+                        BerufSkills a = new BerufSkills(createGUIItems(m, args[2]), args[2], args[3], cooldown, Berufklasse.getOfArray(args[5]), neededLevel, consumedMana);
+                        if (SkillMapper.addBerufSkill(a)) {
+                            sender.sendMessage("Der Berufskill " + a.getName() + " wurde mit dem Material " + a.getIcon() + ", dem Cooldown " + a.getCooldown() + ", dem Executer " + a.getCommand() + ", dem Mindestlevel " + a.getNeededLevel() + ", dem Manause " + a.getConsumedMana() + " in der Berufsklasse " + a.getBerufklasse() + " erfolgreich erstellt.");
+                        }
                     }
-                    int cooldown = stringToInt(args[4],player);
-                    int neededLevel = stringToInt(args[6],player);
-                    int consumedMana = stringToInt(args[7],player);
-                    BerufSkills a = new BerufSkills(createGUIItems(m, args[2]), args[2], args[3], cooldown, Berufklasse.getOfArray(args[5]), neededLevel, consumedMana);
-                    if (SkillMapper.addBerufSkill(a)) {
-                        sender.sendMessage("Der Berufskill " + a.getName() + " wurde mit dem Material " + a.getIcon() + ", dem Cooldown " + a.getCooldown() + ", dem Executer " + a.getCommand() + ", dem Mindestlevel " + a.getNeededLevel() + ", dem Manause " + a.getConsumedMana() + " in der Berufsklasse " + a.getBerufklasse() + " erfolgreich erstellt.");
+                    if (args[0].equalsIgnoreCase("newKampfSkill")) {
+                        Material m = Material.getMaterial(args[1]);
+                        if (m == null) {
+                            m = Material.DIRT;
+                            sender.sendMessage("Material ungültig Dirt als Icon genommen!");
+                        }
+                        int cooldown = stringToInt(args[4], player);
+                        int neededLevel = stringToInt(args[6], player);
+                        int consumedMana = stringToInt(args[7], player);
+                        KampfSkills a = new KampfSkills(createGUIItems(m, args[2]), args[2], args[3], cooldown, Kampfklassen.getOfArray(args[5]), neededLevel, consumedMana);
+                        if (SkillMapper.addKampfSkill(a)) {
+                            sender.sendMessage("Der Kampfskill " + a.getName() + " wurde mit dem Material " + a.getIcon() + ", dem Cooldown " + a.getCooldown() + ", dem Executer " + a.getCommand() + ", dem Mindestlevel " + a.getNeededLevel() + ", dem Manause " + a.getConsumedMana() + " in der Berufsklasse " + a.getKampfKlasse() + " erfolgreich erstellt.");
+                        }
                     }
+                } else {
+                    sender.sendMessage("Du hast keine berechtigung dafür");
                 }
-                if (args[0].equalsIgnoreCase("newKampfSkill")) {
-                    Material m = Material.getMaterial(args[1]);
-                    if (m == null) {
-                        m = Material.DIRT;
-                        sender.sendMessage("Material ungültig Dirt als Icon genommen!");
-                    }
-                    int cooldown = stringToInt(args[4],player);
-                    int neededLevel = stringToInt(args[6],player);
-                    int consumedMana = stringToInt(args[7],player);
-                    KampfSkills a = new KampfSkills(createGUIItems(m, args[2]), args[2], args[3], cooldown, Kampfklassen.getOfArray(args[5]), neededLevel, consumedMana);
-                    if (SkillMapper.addKampfSkill(a)) {
-                        sender.sendMessage("Der Kampfskill " + a.getName() + " wurde mit dem Material " + a.getIcon() + ", dem Cooldown " + a.getCooldown() + ", dem Executer " + a.getCommand() + ", dem Mindestlevel " + a.getNeededLevel() + ", dem Manause " + a.getConsumedMana() + " in der Berufsklasse " + a.getKampfKlasse() + " erfolgreich erstellt.");
-                    }
-                }
-            }
-            else {
-                sender.sendMessage("Du hast keine berechtigung dafür");
-            }
 
-        }
+            }
         return true;
     }
+
 
     @Nullable
     @Override
@@ -379,5 +386,4 @@ public class MakeCommand implements TabExecutor {
             return 0;
         }
     }
-
 }

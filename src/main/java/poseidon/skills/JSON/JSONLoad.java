@@ -9,11 +9,14 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.RecipeChoice;
 import org.bukkit.inventory.ShapedRecipe;
+import org.bukkit.inventory.ShapelessRecipe;
 import org.bukkit.inventory.recipe.CraftingBookCategory;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import poseidon.skills.CustomItems.CustomItem;
+import poseidon.skills.CustomItems.CustomShapedRecipe;
+import poseidon.skills.CustomItems.CustomShapelessRecipe;
 import poseidon.skills.Klassen.Berufklasse;
 import poseidon.skills.Klassen.Kampfklassen;
 import poseidon.skills.Klassen.Players;
@@ -117,7 +120,7 @@ public class JSONLoad {
 
     }
     public static void loadRecipes(){
-        File f = new File(JSONSave.getCustomRecipeDic());
+        File f = new File(JSONSave.getCustomShapedRecipeDic());
         File[] files = f.listFiles();
         if(files == null){
             return;
@@ -129,11 +132,27 @@ public class JSONLoad {
                 String  keyString = (String) object.get("Key");
                 NamespacedKey key = NamespacedKey.fromString(keyString);
                 String resultData = (String) object.get("ResultItemData");
-                ItemStack result = JSONSave.itemFrom64(resultData);
-                Berufklasse berufklasse = Berufklasse.getOfArray((String) object.get("beruf"));
                 CraftingBookCategory category = CraftingBookCategory.valueOf((String) object.get("Category"));
                 String shapeString = (String) object.get("shape");
-
+                ItemStack result = JSONSave.itemFrom64(resultData);
+                Berufklasse berufklasse = Berufklasse.Unchosed;
+                Kampfklassen kampfklassen = Kampfklassen.Unchosed;
+                int berufLevel = -1;
+                int kampfLevel = -1;
+                if(object.containsKey("beruf")) {
+                    berufklasse = Berufklasse.getOfArray((String) object.get("beruf"));
+                }
+                if(object.containsKey("kampf")){
+                    kampfklassen = Kampfklassen.getOfArray((String) object.get("kampf"));
+                }
+                if(object.containsKey("berufLevel")){
+                    long berufLevel1 = (long) object.get("berufLevel");
+                    berufLevel = (int) berufLevel1;
+                }
+                if(object.containsKey("kampfLevel")){
+                    long kampfLevel1 = (long) object.get("kampfLevel");
+                    kampfLevel = (int) kampfLevel1;
+                }
                 int b = 1;
                 assert key != null;
                 ShapedRecipe recipe = new ShapedRecipe(key, result);
@@ -147,7 +166,54 @@ public class JSONLoad {
                     recipe.setIngredient(c,recipeChoice);
                     b++;
                 }
-                CustomItem.registerRecipe(recipe,berufklasse);
+                CustomShapedRecipe.registerRecipe(new CustomShapedRecipe(recipe, kampfklassen,kampfLevel, berufklasse, berufLevel));
+            } catch (IOException | ParseException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        File f1 = new File(JSONSave.getCustomShapelessRecipeDic());
+        File[] files1 = f1.listFiles();
+        if(files1 == null){
+            return;
+        }
+        for(File file : files1){
+            JSONParser parser = new JSONParser();
+            try (Reader reader = new FileReader(file)){
+                JSONObject object = (JSONObject) parser.parse(reader);
+                String  keyString = (String) object.get("Key");
+                NamespacedKey key = NamespacedKey.fromString(keyString);
+                String resultData = (String) object.get("ResultItemData");
+                CraftingBookCategory category = CraftingBookCategory.valueOf((String) object.get("Category"));
+                ItemStack result = JSONSave.itemFrom64(resultData);
+                Berufklasse berufklasse = Berufklasse.Unchosed;
+                Kampfklassen kampfklassen = Kampfklassen.Unchosed;
+                int berufLevel = -1;
+                int kampfLevel = -1;
+                if(object.containsKey("beruf")) {
+                    berufklasse = Berufklasse.getOfArray((String) object.get("beruf"));
+                }
+                if(object.containsKey("kampf")){
+                    kampfklassen = Kampfklassen.getOfArray((String) object.get("kampf"));
+                }
+                if(object.containsKey("berufLevel")){
+                    long berufLevel1 = (long) object.get("berufLevel");
+                    berufLevel = (int) berufLevel1;
+                }
+                if(object.containsKey("kampfLevel")){
+                    long kampfLevel1 = (long) object.get("kampfLevel");
+                    kampfLevel = (int) kampfLevel1;
+                }
+                int b = 1;
+                assert key != null;
+                ShapelessRecipe recipe = new ShapelessRecipe(key,result);
+                recipe.setCategory(category);
+                while (object.containsKey(b + "ItemData")){
+                    ItemStack itemStack = JSONSave.itemFrom64((String) object.get(b + "ItemData"));
+                    RecipeChoice recipeChoice = new RecipeChoice.ExactChoice(itemStack);
+                    recipe.addIngredient(recipeChoice);
+                    b++;
+                }
+                CustomShapelessRecipe.registerRecipe(new CustomShapelessRecipe(recipe, kampfklassen, kampfLevel, berufklasse, berufLevel));
             } catch (IOException | ParseException e) {
                 throw new RuntimeException(e);
             }
@@ -165,20 +231,15 @@ public class JSONLoad {
             try(Reader reader = new FileReader(file)){
                 JSONObject object = (JSONObject) parser.parse(reader);
                 ItemStack itemStack = JSONSave.itemFrom64((String) object.get("Item"));
-                if(object.containsKey("Beruf") && object.containsKey("Kampf")){
-                    Kampfklassen kampfklassen = Kampfklassen.getOfArray((String) object.get("Kampf"));
-                    Berufklasse berufklasse = Berufklasse.getOfArray((String) object.get("Beruf"));
-                    CustomItem.registerItem(new CustomItem(itemStack,kampfklassen, berufklasse));
+                Berufklasse berufklasse = Berufklasse.Unchosed;
+                Kampfklassen kampfklassen = Kampfklassen.Unchosed;
+                if(object.containsKey("Beruf")){
+                    berufklasse = Berufklasse.getOfArray((String) object.get("Beruf"));
                 }
-                else  if(object.containsKey("Beruf")){
-                    Berufklasse berufklasse = Berufklasse.getOfArray((String) object.get("Beruf"));
-                    CustomItem.registerItem(new CustomItem(itemStack,berufklasse));
+                if(object.containsKey("Kampf")){
+                    kampfklassen = Kampfklassen.getOfArray((String) object.get("Kampf"));
                 }
-                else if(object.containsKey("Kampf")){
-                    Kampfklassen kampfklassen = Kampfklassen.getOfArray((String) object.get("Kampf"));
-                    CustomItem.registerItem(new CustomItem(itemStack,kampfklassen));
-                }
-
+                CustomItem.registerItem(new CustomItem(itemStack, kampfklassen, berufklasse));
             }
             catch (IOException | ParseException e) {
                 throw new RuntimeException(e);

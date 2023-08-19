@@ -8,6 +8,8 @@ import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import poseidon.skills.Bar;
 import poseidon.skills.CustomItems.CustomItem;
+import poseidon.skills.CustomItems.CustomShapedRecipe;
+import poseidon.skills.CustomItems.CustomShapelessRecipe;
 import poseidon.skills.JSON.JSONSave;
 import poseidon.skills.Klassen.Berufklasse;
 import poseidon.skills.Klassen.Kampfklassen;
@@ -83,7 +85,10 @@ public class Debug implements TabExecutor {
                     CityMapper.getclaimedChunks().forEach((chunk, city) -> player.sendMessage(city.getCityName() + " + " + chunk.getX() + " / " + chunk.getZ()));
                 }
                 if(args[1].equalsIgnoreCase("Recipes")){
-                    CustomItem.shapedRecipeList.forEach((shapedRecipe, berufklasse) -> player.sendMessage(shapedRecipe.getKey().toString()));
+                    sender.sendMessage("ShapedRecipes");
+                    CustomShapedRecipe.getCustomShapedRecipeHashMap().forEach((namespacedKey, shapedRecipe) -> player.sendMessage(namespacedKey.toString() + " " + shapedRecipe.getBerufklasse().getDisplayName() + " " + shapedRecipe.getNeededBerufLevel() + " " + shapedRecipe.getKampfklassen().getDisplayName() + " " + shapedRecipe.getNeededKampfLevel()));
+                    sender.sendMessage("ShapelessRecipes");
+                    CustomShapelessRecipe.getCustomShapedRecipeHashMap().forEach((key, shapelessRecipe) -> sender.sendMessage(key.toString() + " " + shapelessRecipe.getBerufklasse().getDisplayName() + " " + shapelessRecipe.getNeededBerufLevel() + " " + shapelessRecipe.getKampfklassen().getDisplayName() + " " + shapelessRecipe.getNeededKampfLevel()));
                 }
                 if(args[1].equalsIgnoreCase("CustomItems")){
                     CustomItem.customItemHashMap.forEach((s, customItem) -> {
@@ -103,9 +108,13 @@ public class Debug implements TabExecutor {
                     CustomItem.makeExamples();
                     sender.sendMessage("CustomItems geladen");
                 }
-                if(args[1].equalsIgnoreCase("Recipes")){
-                    CustomItem.example();
-                    sender.sendMessage("Rezepte geladen");
+                if(args[1].equalsIgnoreCase("ShapedRecipes")){
+                    CustomShapedRecipe.example();
+                    sender.sendMessage("ShapedRezepte geladen");
+                }
+                if(args[1].equalsIgnoreCase("ShapelessRecipes")){
+                    CustomShapelessRecipe.example();
+                    sender.sendMessage("ShapelessRecipes geladen");
                 }
                 if (args[1].equalsIgnoreCase("KampfSkills")) {
                     KampfSkills.addBaseSkills();
@@ -133,9 +142,13 @@ public class Debug implements TabExecutor {
                     player.sendMessage(ChatColor.RED + "Du hast die Rechte dafür nicht!");
                     return false;
                 }
-                if(args[1].equalsIgnoreCase("Recipes")){
-                    JSONSave.saveRecipes();
-                    sender.sendMessage("Rezepte wurden geschrieben");
+                if(args[1].equalsIgnoreCase("ShapedRecipes")){
+                    JSONSave.saveShapedRecipes();
+                    sender.sendMessage("ShapedRezepte wurden geschrieben");
+                }
+                if(args[1].equalsIgnoreCase("ShapelessRecipes")){
+                    JSONSave.saveShapelessRecipes();
+                    sender.sendMessage("ShapelessRecipes wurden geschrieben");
                 }
                 if (args[1].equalsIgnoreCase("KampfKlassen")) {
                     JSONSave.kampfKlassenSave();
@@ -189,7 +202,7 @@ public class Debug implements TabExecutor {
         double c = KlassChoose.getPlayers(player).getBerufXP();
         double process = c / b;
         Bar bar = KlassChoose.getPlayers(player).getBerufBar();
-        bar.addPlayer(player, ChatColor.BLUE + KlassChoose.getPlayers(player).getBerufklasse().getDisplayName() + ": " + c + "/" + b, process, 100);
+        bar.addPlayer(player, ChatColor.BLUE + KlassChoose.getPlayers(player).getBerufklasse().getDisplayName() + ": " + c + "/" + b, process, 500);
     }
 
     public static void kampfBar(Player player) {
@@ -198,7 +211,7 @@ public class Debug implements TabExecutor {
         double c = KlassChoose.getPlayers(player).getKampfXP();
         double process = c / b;
         Bar bar = KlassChoose.getPlayers(player).getKampfBar();
-        bar.addPlayer(player, ChatColor.RED + KlassChoose.getPlayers(player).getKampfklasse().getDisplayName() + ": " + c + "/" + b, process, 100);
+        bar.addPlayer(player, ChatColor.RED + KlassChoose.getPlayers(player).getKampfklasse().getDisplayName() + ": " + c + "/" + b, process, 500);
     }
 
     @Override
