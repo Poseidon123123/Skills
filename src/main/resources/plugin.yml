@@ -113,6 +113,12 @@ permissions:
       Skills.command.DB.List: true
       Skills.command.DB.loadList: true
       Skills.command.DB.deletePlayer: true
+      Skills.command.DB.CustomItems: true
+  Skills.command.DB.CustomItems:
+    description: to get all CustomItems
+    default: op
+    children:
+      Skills.command.DB: true
   Skills.command.DB.dic:
     description: to create the .json
     default: op

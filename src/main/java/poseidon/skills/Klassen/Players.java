@@ -3,9 +3,13 @@ package poseidon.skills.Klassen;
 import org.bukkit.ChatColor;
 import org.bukkit.boss.BarColor;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.Nullable;
 import poseidon.skills.Bar;
 import poseidon.skills.Skills;
 import poseidon.skills.citys.City;
+import poseidon.skills.skill.BerufSkills;
+import poseidon.skills.skill.KampfSkills;
 
 public class Players {
 
@@ -21,6 +25,10 @@ public class Players {
     private Bar manaBar;
     private int money;
     private City hometown;
+    private ItemStack BerufItemSkill;
+    private ItemStack KampfItemSkill;
+    private BerufSkills boundBeruf;
+    private KampfSkills boundKampf;
 
     public Players(Player player, Berufklasse berufklasse, Kampfklassen kampfklasse){
         this.player = player;
@@ -34,9 +42,14 @@ public class Players {
         this.berufBar = null;
         this.kampfBar = null;
         this.manaBar = null;
+        this.boundBeruf = null;
+        this.boundKampf = null;
+        this.BerufItemSkill = null;
+        this.KampfItemSkill = null;
     }
 
-    public Players(Player player, Berufklasse berufklasse, Kampfklassen kampfklasse, int berufLevel, int berufXP, int kampfLevel, int kampfXP, int money, City hometown){
+    public Players(Player player, Berufklasse berufklasse, Kampfklassen kampfklasse, int berufLevel, int berufXP, int kampfLevel,
+                   int kampfXP, int money, City hometown, ItemStack berufSkillItem, BerufSkills berufSkills, ItemStack kampfItemSkill, KampfSkills kampfSkills){
         this.player = player;
         this.berufklasse = berufklasse;
         this.kampfklasse = kampfklasse;
@@ -55,6 +68,11 @@ public class Players {
         this.manaBar = null;
         this.money = money;
         this.hometown = hometown;
+        this.KampfItemSkill = kampfItemSkill;
+        this.BerufItemSkill = berufSkillItem;
+        this.boundKampf = kampfSkills;
+        this.boundBeruf = berufSkills;
+
     }
 
     public Player getPlayer() {
@@ -173,5 +191,34 @@ public class Players {
 
     public void setHometown(City hometown) {
         this.hometown = hometown;
+    }
+
+    @Nullable
+    public ItemStack getBerufItemSkill() {
+        return BerufItemSkill;
+    }
+    @Nullable
+    public ItemStack getKampfItemSkill() {
+        return KampfItemSkill;
+    }
+    @Nullable
+    public BerufSkills getBoundBeruf() {
+        return boundBeruf;
+    }
+    @Nullable
+    public KampfSkills getBoundKampf() {
+        return boundKampf;
+    }
+    public void setBoundKampf(KampfSkills boundKampf) {
+        this.boundKampf = boundKampf;
+    }
+    public void setBerufItemSkill(ItemStack berufItemSkill) {
+        BerufItemSkill = berufItemSkill;
+    }
+    public void setKampfItemSkill(ItemStack kampfItemSkill) {
+        KampfItemSkill = kampfItemSkill;
+    }
+    public void setBoundBeruf(BerufSkills boundBeruf) {
+        this.boundBeruf = boundBeruf;
     }
 }

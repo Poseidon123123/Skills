@@ -65,8 +65,19 @@ public class JSONLoad {
                 else {
                     city = null;
                 }
-
-                return new Players(player, klassen1, kampfklassen, (int) beruflevel, (int) berufXP, (int) kampflevel, (int) kampfXP, (int) money, city);
+                ItemStack berufItem = JSONSave.itemFrom64((String) object.get("BerufItem"));
+                BerufSkills berufSkills = null;
+                if(object.containsKey("BerufSkill")) {
+                    String skillname = (String) object.get("BerufSkill");
+                    berufSkills = SkillMapper.getOfBerufArray(skillname);
+                }
+                ItemStack kampfItem = JSONSave.itemFrom64((String) object.get("KampfItem"));
+                KampfSkills kampfSkills = null;
+                if(object.containsKey("KampfSkill")){
+                    String name = (String) object.get("KampfSkill");
+                    kampfSkills = SkillMapper.getOfKampfArray(name);
+                }
+                return new Players(player, klassen1, kampfklassen, (int) beruflevel, (int) berufXP, (int) kampflevel, (int) kampfXP, (int) money, city, berufItem, berufSkills, kampfItem, kampfSkills);
             } catch (IOException | ParseException e) {
                 throw new RuntimeException(e);
             }

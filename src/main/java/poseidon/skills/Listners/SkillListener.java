@@ -8,11 +8,15 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.inventory.CraftItemEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
+import poseidon.skills.CooldownSystem;
 import poseidon.skills.CustomItems.CustomItem;
 import poseidon.skills.CustomItems.CustomShapedRecipe;
 import poseidon.skills.CustomItems.CustomShapelessRecipe;
@@ -37,13 +41,7 @@ public class SkillListener implements Listener {
         ManaMap map = new ManaMap(event.getPlayer());
         boolean a = map.useMana(mana);
         if(a) {
-            RunSkills runSkills = new RunSkills(event.getPlayer());
-            switch (command) {
-                case "B1" -> runSkills.B1();
-                case "B2" -> runSkills.B2();
-                case "BB1" -> runSkills.BB1();
-                case "BK1" -> runSkills.BK1();
-            }
+            RunSkills.decode(event.getPlayer(), command);
             Objects.requireNonNull(item).setAmount(cooldown);
             cooldown(item, event.getPlayer(), cooldown - 1);
         }
@@ -99,9 +97,14 @@ public class SkillListener implements Listener {
         for (KampfSkills b : SkillMapper.getKampfSkills()) {
             if (item.isSimilar(b.getIcon())) {
                 event.setCancelled(true);
-                if(item.getAmount() == 1) {
-                    if(aktivator(event, b.getCommand(), b.getCooldown(), b.getConsumedMana())) {
+                CooldownSystem cooldownSystem = CooldownSystem.getbyPlayer(event.getPlayer());
+                if(cooldownSystem.hasCoolDown(b)) {
+                    ManaMap map = new ManaMap(event.getPlayer());
+                    if(map.useMana(b.getConsumedMana())) {
+                        RunSkills.decode(event.getPlayer(), b.getCommand());
                         event.getPlayer().sendMessage(ChatColor.BLUE + "Der Skill " + b.getName() + " wurde ausgeführt");
+                        ItemStack item1 = event.getPlayer().getInventory().getItem(event.getNewSlot());
+                        cooldownSystem.addCoolDown(b, b.getCooldown(), item1, event.getPlayer());
                     }
                 }
                 return;
@@ -109,10 +112,14 @@ public class SkillListener implements Listener {
         }
         for (BerufSkills b : SkillMapper.getBerufSkills()) {
             if (item.isSimilar(b.getIcon())) {
-                event.setCancelled(true);
-                if(item.getAmount() == 1) {
-                    if(aktivator(event, b.getCommand(), b.getCooldown(), b.getConsumedMana())) {
+                CooldownSystem cooldownSystem = CooldownSystem.getbyPlayer(event.getPlayer());
+                if(cooldownSystem.hasCoolDown(b)) {
+                    ManaMap map = new ManaMap(event.getPlayer());
+                    if(map.useMana(b.getConsumedMana())) {
+                        RunSkills.decode(event.getPlayer(), b.getCommand());
                         event.getPlayer().sendMessage(ChatColor.BLUE + "Der Skill " + b.getName() + " wurde ausgeführt");
+                        ItemStack item1 = event.getPlayer().getInventory().getItem(event.getNewSlot());
+                        cooldownSystem.addCoolDown(b, b.getCooldown(), item1, event.getPlayer());
                     }
                 }
                 return;
@@ -139,6 +146,56 @@ public class SkillListener implements Listener {
             }
         }
     }
+    @EventHandler(ignoreCancelled = false)
+    public void onRightClick(PlayerInteractEvent event){
+        if(event.getHand() != EquipmentSlot.HAND) {
+            return;
+        }
+        Player player = event.getPlayer();
+        Players players = KlassChoose.getPlayers(player);
+        System.out.println(1);
+        if(event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK) {
+            System.out.println(2);
+            if (players.getKampfItemSkill() != null && players.getKampfItemSkill().isSimilar(event.getItem()) && players.getBoundKampf() != null) {
+                System.out.println(3);
+                KampfSkills b = players.getBoundKampf();
+                CooldownSystem cooldownSystem = CooldownSystem.getbyPlayer(event.getPlayer());
+                if (!cooldownSystem.hasCoolDown(b)) {
+                    System.out.println(4);
+                    ManaMap map = new ManaMap(event.getPlayer());
+                    if (map.useMana(b.getConsumedMana())) {
+                        System.out.println(5);
+                        RunSkills.decode(event.getPlayer(), b.getCommand());
+                        event.getPlayer().sendMessage(ChatColor.BLUE + "Der Skill " + b.getName() + " wurde ausgeführt");
+                        cooldownSystem.addCoolDown(b, b.getCooldown());
+                    }
+                }
+                else {
+                    player.sendMessage(ChatColor.RED + "Cooldown");
+                }
+            }
+            if (players.getBerufItemSkill() != null && players.getBerufItemSkill().isSimilar(event.getItem()) && players.getBoundBeruf() != null) {
+                System.out.println(6);
+                BerufSkills b = players.getBoundBeruf();
+                CooldownSystem cooldownSystem = CooldownSystem.getbyPlayer(event.getPlayer());
+                if (!cooldownSystem.hasCoolDown(b)) {
+                    System.out.println(7);
+                    ManaMap map = new ManaMap(event.getPlayer());
+                    if (map.useMana(b.getConsumedMana())) {
+                        System.out.println(8);
+                        RunSkills.decode(event.getPlayer(), b.getCommand());
+                        event.getPlayer().sendMessage(ChatColor.BLUE + "Der Skill " + b.getName() + " wurde ausgeführt");
+                        cooldownSystem.addCoolDown(b, b.getCooldown());
+                    }
+                }
+                else {
+                    player.sendMessage(ChatColor.RED + "Cooldown");
+                }
+            }
+        }
+    }
+
+
 
     @EventHandler(ignoreCancelled = true)
     public void onCraft(CraftItemEvent event){
@@ -211,5 +268,4 @@ public class SkillListener implements Listener {
         }
 
     }
-
 }

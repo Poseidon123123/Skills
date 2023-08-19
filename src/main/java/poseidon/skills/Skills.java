@@ -99,7 +99,10 @@ public final class Skills extends JavaPlugin {
         addDefault("Values.Radius.NearEnemy", 5);
         addDefault("Values.Money.CreateCity", 5000);
         addDefault("Values.Money.claimChunk", 1000);
-        addDefault("Funktions.FarmWorld.MainWorldName", "world");
+        addDefault("Values.Cooldown.BerufChange", 2);
+        addDefault("Values.Cooldown.KampfChange", 2);
+        addDefault("Values.Cooldown.TimerCheck", 12000);
+        addDefault("Funktions.FarmWorld.MainWorldName", "");
         getConfig().options().copyDefaults(true);
         saveConfig();
     }
@@ -131,5 +134,6 @@ public final class Skills extends JavaPlugin {
         JSONLoad.loadCitys();
         JSONLoad.loadCustomItems();
         JSONLoad.loadRecipes();
+        CooldownSystem.performActionAndCleanup();
     }
 }

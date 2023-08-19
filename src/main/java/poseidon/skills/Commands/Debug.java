@@ -6,7 +6,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
-import poseidon.skills.Bar;
+import poseidon.skills.*;
 import poseidon.skills.CustomItems.CustomItem;
 import poseidon.skills.CustomItems.CustomShapedRecipe;
 import poseidon.skills.CustomItems.CustomShapelessRecipe;
@@ -14,9 +14,6 @@ import poseidon.skills.JSON.JSONSave;
 import poseidon.skills.Klassen.Berufklasse;
 import poseidon.skills.Klassen.Kampfklassen;
 import poseidon.skills.Klassen.KlassChoose;
-import poseidon.skills.Skills;
-import poseidon.skills.XPMapper;
-import poseidon.skills.XPObjekt;
 import poseidon.skills.citys.CityMapper;
 import poseidon.skills.skill.BerufSkills;
 import poseidon.skills.skill.KampfSkills;
@@ -28,7 +25,6 @@ import java.util.List;
 import java.util.Objects;
 
 import static poseidon.skills.XPMapper.evaluateMathExpression;
-//TODO Korrekte Aufteilung der Command + TabComplete
 public class Debug implements TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
@@ -38,10 +34,19 @@ public class Debug implements TabExecutor {
         assert sender instanceof Player;
         Player player = (Player) sender;
         if(args.length == 1) {
-            if (args[0].equalsIgnoreCase("getCustomItems")) {
+            if (args[0].equalsIgnoreCase("CustomItems")) {
+                if(!sender.hasPermission("Skills.command.DB.CustomItems")) {
+                    player.sendMessage(ChatColor.RED + "Du hast die Rechte dafür nicht!");
+                    return false;
+                }
                 CustomItem.customItemHashMap.forEach((s, customItem) -> {
                     player.getInventory().addItem(customItem.getCustomItem());
                 });
+            }
+            if(args[0].equalsIgnoreCase("Cooldown")){
+                CooldownSystem cooldownSystem = CooldownSystem.getbyPlayer(player);
+                cooldownSystem.getKampfCooldown().forEach((kampfSkills, integer) -> player.sendMessage(kampfSkills.getName() + " " + integer));
+                cooldownSystem.getBerufCooldown().forEach((berufSkills, integer) -> player.sendMessage(berufSkills.getName() + " " + integer));
             }
         }
         if(args.length == 2) {
@@ -202,7 +207,7 @@ public class Debug implements TabExecutor {
         double c = KlassChoose.getPlayers(player).getBerufXP();
         double process = c / b;
         Bar bar = KlassChoose.getPlayers(player).getBerufBar();
-        bar.addPlayer(player, ChatColor.BLUE + KlassChoose.getPlayers(player).getBerufklasse().getDisplayName() + ": " + c + "/" + b, process, 500);
+        bar.addPlayer(player, ChatColor.BLUE + KlassChoose.getPlayers(player).getBerufklasse().getDisplayName() + ": " + c + "/" + b, process, 100);
     }
 
     public static void kampfBar(Player player) {
@@ -211,7 +216,7 @@ public class Debug implements TabExecutor {
         double c = KlassChoose.getPlayers(player).getKampfXP();
         double process = c / b;
         Bar bar = KlassChoose.getPlayers(player).getKampfBar();
-        bar.addPlayer(player, ChatColor.RED + KlassChoose.getPlayers(player).getKampfklasse().getDisplayName() + ": " + c + "/" + b, process, 500);
+        bar.addPlayer(player, ChatColor.RED + KlassChoose.getPlayers(player).getKampfklasse().getDisplayName() + ": " + c + "/" + b, process, 100);
     }
 
     @Override
@@ -230,6 +235,9 @@ public class Debug implements TabExecutor {
             if(sender.hasPermission("Skills.command.DB.deletePlayer")) {
                 tabCompleteList.add("deletePlayers");
             }
+            if(sender.hasPermission("Skills.command.DB.CustomItems")){
+                tabCompleteList.add("CustomItems");
+            }
         }
         else if (args.length == 2){
             if (args[0].equalsIgnoreCase("List") && sender.hasPermission("Skills.command.DB.List")) {
@@ -240,6 +248,9 @@ public class Debug implements TabExecutor {
                 tabCompleteList.add("Mobs");
                 tabCompleteList.add("AllBeruf");
                 tabCompleteList.add("City");
+                tabCompleteList.add("Chunks");
+                tabCompleteList.add("Recipes");
+                tabCompleteList.add("CustomItems");
             } else if (args[0].equalsIgnoreCase("generateFile") && sender.hasPermission("Skills.command.DB.dic")) {
                 tabCompleteList.add("BerufKlassen");
                 tabCompleteList.add("KampfKlassen");
@@ -247,12 +258,18 @@ public class Debug implements TabExecutor {
                 tabCompleteList.add("BerufSkill");
                 tabCompleteList.add("Mobs");
                 tabCompleteList.add("AllXP");
+                tabCompleteList.add("CustomItems");
+                tabCompleteList.add("ShapedRecipes");
+                tabCompleteList.add("ShapelessRecipes");
             } else if (args[0].equalsIgnoreCase("addList") && sender.hasPermission("Skills.command.DB.loadList")) {
                 tabCompleteList.add("BerufKlassen");
                 tabCompleteList.add("KampfKlassen");
                 tabCompleteList.add("KampfSkills");
                 tabCompleteList.add("BerufSkills");
                 tabCompleteList.add("AllXP");
+                tabCompleteList.add("CustomItems");
+                tabCompleteList.add("ShapedRecipes");
+                tabCompleteList.add("ShapelessRecipes");
             }
             else if (args[0].equalsIgnoreCase("deletePlayers") && sender.hasPermission("Skills.command.DB.deletePlayer")) {
                 Bukkit.getOnlinePlayers().forEach(player -> tabCompleteList.add(player.getName()));

@@ -15,6 +15,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
+import poseidon.skills.CooldownSystem;
 import poseidon.skills.JSON.JSONLoad;
 import poseidon.skills.JSON.JSONSave;
 import poseidon.skills.Klassen.Berufklasse;
@@ -42,6 +43,10 @@ public class Testlistener implements Listener {
         ManaMap.getMana().putIfAbsent(players.getPlayer(), players.getKampfLevel() + players.getKampfklasse().getBaseMana());
         invReset(players.getPlayer());
         new ManaMap(players.getPlayer()).refreshManaBar();
+        CooldownSystem cooldownSystem = CooldownSystem.registerPlayer(players.getPlayer());
+        if(cooldownSystem != null){
+            cooldownSystem.startCooldowns();
+        }
     }
 
     @EventHandler
@@ -94,6 +99,7 @@ public class Testlistener implements Listener {
 
     public static void PlayerLeaveAction(Player player){
         JSONSave.playerSave(player);
+
     }
 
     @EventHandler

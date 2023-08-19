@@ -55,6 +55,7 @@ public class JSONSave {
     }
 
     public static void playerSave(Player player) {
+        System.out.println("PlayerSave");
         JSONObject obj = new JSONObject();
         Players players = KlassChoose.getPlayers(player);
         String name = player.getName();
@@ -69,6 +70,14 @@ public class JSONSave {
         obj.put("KampfXP", players.getKampfXP());
         obj.put("Mana", new ManaMap(player).getManaValue());
         obj.put("Money", players.getMoney());
+        obj.put("BerufItem", itemTo64(players.getBerufItemSkill()));
+        obj.put("KampfItem", itemTo64(players.getKampfItemSkill()));
+        if(players.getBoundBeruf() != null) {
+            obj.put("BerufSkill", players.getBoundBeruf().getName());
+        }
+        if(players.getBoundKampf() != null) {
+            obj.put("KampfSkill", players.getBoundKampf().getName());
+        }
         String s = "null";
         if (players.getHometown() != null) {
             s = players.getHometown().getCityName();
@@ -81,6 +90,7 @@ public class JSONSave {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        System.out.println("Player save done");
     }
 
 

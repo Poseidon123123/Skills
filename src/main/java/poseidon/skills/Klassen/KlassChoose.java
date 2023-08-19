@@ -18,7 +18,10 @@ public class KlassChoose {
 
     public static void resetPlayer(Player player){
         chosenChat.get(player.getName()).getManaBar().deleteBar();
-        chosenChat.replace(player.getName(), new Players(player,Berufklasse.Unchosed,Kampfklassen.Unchosed));
+        Players players = chosenChat.replace(player.getName(), new Players(player,Berufklasse.Unchosed,Kampfklassen.Unchosed));
+        players.getManaBar();
+        players.getBerufBar();
+        players.getKampfBar();
     }
 
     public static void setPlayers(Players players){

@@ -7,6 +7,7 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.ItemStack;
 import poseidon.skills.GUI.KampfSkillsGUI;
 import poseidon.skills.Klassen.KlassChoose;
+import poseidon.skills.Klassen.Players;
 import poseidon.skills.skill.KampfSkills;
 
 import java.util.Objects;
@@ -35,19 +36,27 @@ public class  KampfSkillUI extends UI{
     }
 
     public void onClick(InventoryClickEvent event) {
-        if(event.getView() instanceof KampfSkillUI){
+        if (event.getView() instanceof KampfSkillUI) {
             event.setCancelled(true);
-            if(Objects.equals(event.getCurrentItem(), KampfSkillsGUI.BACKBUTTON)){
+            if (Objects.equals(event.getCurrentItem(), KampfSkillsGUI.BACKBUTTON)) {
                 new SkillUI((Player) event.getWhoClicked());
             }
             ItemStack item = event.getCurrentItem();
-            if(KampfSkills.getSkills(item) != null){
+            if (KampfSkills.getSkills(item) != null) {
                 KampfSkills skill = KampfSkills.getSkills(item);
-                if(Objects.requireNonNull(skill).getKampfKlasse().equals(KlassChoose.getPlayers(player).getKampfklasse())) {
-                    if(skill.getNeededLevel() <= KlassChoose.getPlayers(player).getBerufLevel()) {
-                        new KampfSlotUI(player, skill.getIcon());
+                Players players = KlassChoose.getPlayers(player);
+                KampfSkills kampfSkills = players.getBoundKampf();
+                if(kampfSkills != null){
+                    if(kampfSkills.equals(skill)){
+                        player.sendMessage(ChatColor.RED + "Itembindung gelöscht");
+                        players.setKampfItemSkill(null);
+                        players.setBoundKampf(null);
                     }
-                    else {
+                }
+                if (Objects.requireNonNull(skill).getKampfKlasse().equals(KlassChoose.getPlayers(player).getKampfklasse())) {
+                    if (skill.getNeededLevel() <= KlassChoose.getPlayers(player).getKampfLevel()) {
+                        new KampfSlotUI(player, skill);
+                    } else {
                         player.sendMessage(ChatColor.RED + "Zu niedriges Level");
                     }
                 }

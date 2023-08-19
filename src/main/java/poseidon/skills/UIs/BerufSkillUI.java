@@ -8,6 +8,7 @@ import org.bukkit.inventory.ItemStack;
 import poseidon.skills.GUI.BerufSkillGUI;
 import poseidon.skills.GUI.KampfSkillsGUI;
 import poseidon.skills.Klassen.KlassChoose;
+import poseidon.skills.Klassen.Players;
 import poseidon.skills.skill.BerufSkills;
 
 import java.util.Objects;
@@ -42,11 +43,20 @@ public class BerufSkillUI extends UI{
                 new SkillUI((Player) event.getWhoClicked());
             }
             ItemStack item = event.getCurrentItem();
+            BerufSkills skill = BerufSkills.getSkills(item);
+            Players players = KlassChoose.getPlayers(player);
+            BerufSkills kampfSkills = players.getBoundBeruf();
+            if(kampfSkills != null){
+                if(kampfSkills.equals(skill)){
+                    player.sendMessage(ChatColor.RED + "Itembindung gelöscht");
+                    players.setBerufItemSkill(null);
+                    players.setBoundBeruf(null);
+                }
+            }
             if(BerufSkills.getSkills(item) != null){
-                BerufSkills skill = BerufSkills.getSkills(item);
                 if(Objects.requireNonNull(skill).getBerufklasse().equals(KlassChoose.getPlayers(player).getBerufklasse())) {
                     if(skill.getNeededLevel() <= KlassChoose.getPlayers(player).getBerufLevel()) {
-                        new BerufSlotUI(player, skill.getIcon());
+                        new BerufSlotUI(player, skill);
                     }
                     else {
                         player.sendMessage(ChatColor.RED + "Zu niedriges Level");
