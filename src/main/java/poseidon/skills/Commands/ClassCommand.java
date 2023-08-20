@@ -9,6 +9,7 @@ import org.jetbrains.annotations.Nullable;
 import poseidon.skills.Klassen.Berufklasse;
 import poseidon.skills.Klassen.Kampfklassen;
 import poseidon.skills.Klassen.KlassChoose;
+import poseidon.skills.Klassen.Players;
 import poseidon.skills.Skills;
 
 import java.util.ArrayList;
@@ -25,26 +26,39 @@ public class ClassCommand implements TabExecutor {
         }
         else {
             if((args.length == 2)){
+                Players players = KlassChoose.getPlayers(player);
                 if(args[0].equalsIgnoreCase("Beruf")) {
-                    if (Berufklasse.isOnArray(args[1])) {
-                        Berufklasse klassen = Berufklasse.getOfArray(args[1]);
-                        KlassChoose.getPlayers(player).setBerufklasse(klassen);
-                        String a = Objects.requireNonNull(Skills.getInstance().getConfig().getString("Messages.Class.BerufSuccsess"));
-                        a = a.replace("{Beruf}", klassen.getDisplayName());
-                        player.sendMessage(a);
-                    } else{
-                        player.sendMessage(Objects.requireNonNull(Skills.getInstance().getConfig().getString("Messages.Class.noClassFouned")));
+                    if(players.berufChangable()) {
+                        if (Berufklasse.isOnArray(args[1])) {
+                            Berufklasse klassen = Berufklasse.getOfArray(args[1]);
+                            players.setBerufklasse(klassen);
+                            players.berufChanged();
+                            String a = Objects.requireNonNull(Skills.getInstance().getConfig().getString("Messages.Class.BerufSuccsess"));
+                            a = a.replace("{Beruf}", klassen.getDisplayName());
+                            player.sendMessage(a);
+                        } else {
+                            player.sendMessage(Objects.requireNonNull(Skills.getInstance().getConfig().getString("Messages.Class.noClassFouned")));
+                        }
+                    }
+                    else {
+                        player.sendMessage(Skills.getInstance().message("Messages.Class.NoTime"));
                     }
                 }
                 else if(args[0].equalsIgnoreCase("Kampf")) {
-                    if (Kampfklassen.isOnArray(args[1])) {
-                        Kampfklassen klasse = Kampfklassen.getOfArray(args[1]);
-                        KlassChoose.getPlayers(player).setKampfklasse(klasse);
-                        String a = Objects.requireNonNull(Skills.getInstance().getConfig().getString("Messages.Class.KampfSuccsess"));
-                        a = a.replace("{Kampf}", klasse.getDisplayName());
-                        player.sendMessage(a);
-                    } else {
-                        player.sendMessage(Objects.requireNonNull(Skills.getInstance().getConfig().getString("Messages.Class.noClassFouned")));
+                    if(players.kampfChangable()) {
+                        if (Kampfklassen.isOnArray(args[1])) {
+                            Kampfklassen klasse = Kampfklassen.getOfArray(args[1]);
+                            players.setKampfklasse(klasse);
+                            players.kampfChanged();
+                            String a = Objects.requireNonNull(Skills.getInstance().getConfig().getString("Messages.Class.KampfSuccsess"));
+                            a = a.replace("{Kampf}", klasse.getDisplayName());
+                            player.sendMessage(a);
+                        } else {
+                            player.sendMessage(Objects.requireNonNull(Skills.getInstance().getConfig().getString("Messages.Class.noClassFouned")));
+                        }
+                    }
+                    else {
+                        player.sendMessage(Skills.getInstance().message("Messages.Class.NoTime"));
                     }
                 }
             }

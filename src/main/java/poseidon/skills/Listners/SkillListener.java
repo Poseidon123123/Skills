@@ -171,7 +171,7 @@ public class SkillListener implements Listener {
                     }
                 }
                 else {
-                    player.sendMessage(ChatColor.RED + "Cooldown");
+                    player.sendMessage(ChatColor.RED + "Cooldown noch " +  cooldownSystem.getCooldown(b) + " Sekunden");
                 }
             }
             if (players.getBerufItemSkill() != null && players.getBerufItemSkill().isSimilar(event.getItem()) && players.getBoundBeruf() != null) {
@@ -189,7 +189,7 @@ public class SkillListener implements Listener {
                     }
                 }
                 else {
-                    player.sendMessage(ChatColor.RED + "Cooldown");
+                    player.sendMessage(ChatColor.RED + "Cooldown noch" + cooldownSystem.getCooldown(b) + " Sekunden");
                 }
             }
         }

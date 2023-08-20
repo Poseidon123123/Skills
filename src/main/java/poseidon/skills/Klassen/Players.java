@@ -11,6 +11,8 @@ import poseidon.skills.citys.City;
 import poseidon.skills.skill.BerufSkills;
 import poseidon.skills.skill.KampfSkills;
 
+import java.time.LocalDateTime;
+
 public class Players {
 
     private final Player player;
@@ -29,6 +31,8 @@ public class Players {
     private ItemStack KampfItemSkill;
     private BerufSkills boundBeruf;
     private KampfSkills boundKampf;
+    private LocalDateTime berufChange;
+    private LocalDateTime kampfChange;
 
     public Players(Player player, Berufklasse berufklasse, Kampfklassen kampfklasse){
         this.player = player;
@@ -49,7 +53,8 @@ public class Players {
     }
 
     public Players(Player player, Berufklasse berufklasse, Kampfklassen kampfklasse, int berufLevel, int berufXP, int kampfLevel,
-                   int kampfXP, int money, City hometown, ItemStack berufSkillItem, BerufSkills berufSkills, ItemStack kampfItemSkill, KampfSkills kampfSkills){
+                   int kampfXP, int money, City hometown, ItemStack berufSkillItem, BerufSkills berufSkills,
+                   ItemStack kampfItemSkill, KampfSkills kampfSkills, LocalDateTime berufChange, LocalDateTime kampfChange){
         this.player = player;
         this.berufklasse = berufklasse;
         this.kampfklasse = kampfklasse;
@@ -72,6 +77,8 @@ public class Players {
         this.BerufItemSkill = berufSkillItem;
         this.boundKampf = kampfSkills;
         this.boundBeruf = berufSkills;
+        this.berufChange = berufChange;
+        this.kampfChange = kampfChange;
 
     }
 
@@ -220,5 +227,29 @@ public class Players {
     }
     public void setBoundBeruf(BerufSkills boundBeruf) {
         this.boundBeruf = boundBeruf;
+    }
+    public boolean berufChangable(){
+        if(berufChange == null){
+            return true;
+        }
+        return berufChange.compareTo(LocalDateTime.now()) > Skills.getInstance().value("Values.Cooldown.BerufChange");
+    }
+    public boolean kampfChangable(){
+        if(kampfChange == null){
+            return true;
+        }
+        return kampfChange.compareTo(LocalDateTime.now()) > Skills.getInstance().value("Values.Cooldown.KampfChange");
+    }
+    public void berufChanged(){
+        berufChange = LocalDateTime.now();
+    }
+    public void kampfChanged(){
+        kampfChange = LocalDateTime.now();
+    }
+    public LocalDateTime getBerufChange(){
+        return berufChange;
+    }
+    public LocalDateTime getKampfChange(){
+        return kampfChange;
     }
 }

@@ -83,6 +83,7 @@ public final class Skills extends JavaPlugin {
         addDefault("Messages.City.info", "§6Stadt: {city} \nMoney: {money} \nBürgermeister: {bugerMeister} \nBürger: {listburger}");
         addDefault("Messages.Class.BerufSuccsess", "§1Du bist nun ein {Beruf}");
         addDefault("Messages.Class.noClassFouned", "§4Kein Klasse gefunden");
+        addDefault("Messages.Class.NoTime", "§4Dein ChangeCooldown ist noch nicht abgelaufen!");
         addDefault("Messages.Class.KampfSuccsess", "§1Du bist nun ein {Kampf}");
         addDefault("Messages.Offer.noItemInHand", "§4Halte ein Item in der Hand");
         addDefault("Messages.Offer.OfferAccepted", "§aDein Angebot wurde angenommen");

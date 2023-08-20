@@ -11,12 +11,11 @@ import poseidon.skills.skill.KampfSkills;
 import java.util.*;
 
 public class CooldownSystem {
-    private static HashMap<UUID, CooldownSystem> cooldownSystemHashMap = new HashMap<>();
-    public static CooldownSystem registerPlayer(Player player){
+    private static final HashMap<UUID, CooldownSystem> cooldownSystemHashMap = new HashMap<>();
+    public static void registerPlayer(Player player){
         if(!cooldownSystemHashMap.containsKey(player.getUniqueId())) {
-            return cooldownSystemHashMap.putIfAbsent(player.getUniqueId(), new CooldownSystem(player));
+            cooldownSystemHashMap.put(player.getUniqueId(), new CooldownSystem(player));
         }
-        return null;
     }
     public static CooldownSystem getbyPlayer(Player player){
         return cooldownSystemHashMap.get(player.getUniqueId());
@@ -36,8 +35,7 @@ public class CooldownSystem {
                     uuidsToRemove.add(uuid);
                 }
                 else {
-                    obj.stopCooldowns();
-                    obj.startCooldowns();
+                    obj.restartCooldowns();
                 }
             }
             for (UUID uuidToRemove : uuidsToRemove) {
@@ -45,34 +43,59 @@ public class CooldownSystem {
             }
         }, 200, delay);
     }
+    public void restartCooldowns(){
+        stopCooldowns();
+        startCooldowns();
+    }
     public void startCooldowns(){
         BerufID = Bukkit.getScheduler().runTaskTimer(Skills.getInstance(), () -> {
-            BerufCooldown.forEach((berufSkills, integer) -> {
-                if(integer - 1 > 0 ) {
-                    BerufCooldown.replace(berufSkills, integer, integer - 1);
+            if (BerufCooldown.isEmpty()) {
+                return;
+            }
+
+            Iterator<Map.Entry<BerufSkills, Integer>> berufIterator = BerufCooldown.entrySet().iterator();
+            while (berufIterator.hasNext()) {
+                Map.Entry<BerufSkills, Integer> entry = berufIterator.next();
+                BerufSkills berufSkills = entry.getKey();
+                int remainingCooldown = entry.getValue();
+
+                if (remainingCooldown - 1 > 0) {
+                    entry.setValue(remainingCooldown - 1);
+                } else {
+                    berufIterator.remove();
                 }
-                else {
-                    BerufCooldown.remove(berufSkills);
-                }
-            } );
-        }, 0,20).getTaskId();
+            }
+        }, 0, 20).getTaskId();
+
         KampfID = Bukkit.getScheduler().runTaskTimer(Skills.getInstance(), () -> {
-            KampfCooldown.forEach((berufSkills, integer) -> {
-                if(integer - 1 > 0) {
-                    KampfCooldown.replace(berufSkills, integer, integer - 1);
+            if (KampfCooldown.isEmpty()) {
+                return;
+            }
+            Iterator<Map.Entry<KampfSkills, Integer>> kampfIterator = KampfCooldown.entrySet().iterator();
+            while (kampfIterator.hasNext()) {
+                Map.Entry<KampfSkills, Integer> entry = kampfIterator.next();
+                KampfSkills berufSkills = entry.getKey();
+                int remainingCooldown = entry.getValue();
+
+                if (remainingCooldown - 1 > 0) {
+                    entry.setValue(remainingCooldown - 1);
+                } else {
+                    kampfIterator.remove();
                 }
-                else {
-                    KampfCooldown.remove(berufSkills);
-                }
-            } );
-        }, 0,20).getTaskId();
+            }
+        }, 0, 20).getTaskId();
+
     }
     public void stopCooldowns(){
-        Bukkit.getScheduler().cancelTask(BerufID);
-        Bukkit.getScheduler().cancelTask(KampfID);
+        if(BerufID != 0) {
+            Bukkit.getScheduler().cancelTask(BerufID);
+        }
+        if(KampfID != 0) {
+            Bukkit.getScheduler().cancelTask(KampfID);
+        }
     }
-    private int BerufID;
-    private int KampfID;
+    private int BerufID = 0;
+    private int KampfID = 0;
     private final Players players;
     private final HashMap<BerufSkills, Integer> BerufCooldown = new HashMap<>();
     public HashMap<BerufSkills, Integer> getBerufCooldown(){
@@ -107,6 +130,12 @@ public class CooldownSystem {
     }
     public boolean hasCoolDown(KampfSkills kampfSkills){
         return KampfCooldown.containsKey(kampfSkills);
+    }
+    public int getCooldown(BerufSkills berufSkills){
+        return BerufCooldown.get(berufSkills);
+    }
+    public int getCooldown(KampfSkills kampfSkills){
+        return KampfCooldown.get(kampfSkills);
     }
 
     public static void cooldown(ItemStack item, Player player, int countDown){

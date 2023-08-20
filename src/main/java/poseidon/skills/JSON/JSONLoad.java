@@ -34,6 +34,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -77,7 +78,16 @@ public class JSONLoad {
                     String name = (String) object.get("KampfSkill");
                     kampfSkills = SkillMapper.getOfKampfArray(name);
                 }
-                return new Players(player, klassen1, kampfklassen, (int) beruflevel, (int) berufXP, (int) kampflevel, (int) kampfXP, (int) money, city, berufItem, berufSkills, kampfItem, kampfSkills);
+                LocalDateTime berufChange = null;
+                if(object.containsKey("BerufChange")){
+                    berufChange = JSONSave.stringToLocalDateTime((String) object.get("BerufChange"));
+                }
+                LocalDateTime kampfChange = null;
+                if(object.containsKey("KampfChange")){
+                    kampfChange = JSONSave.stringToLocalDateTime((String) object.get("KampfChange"));
+                }
+                return new Players(player, klassen1, kampfklassen, (int) beruflevel, (int) berufXP, (int) kampflevel, (int) kampfXP, (int) money, city, berufItem,
+                        berufSkills, kampfItem, kampfSkills, berufChange, kampfChange);
             } catch (IOException | ParseException e) {
                 throw new RuntimeException(e);
             }

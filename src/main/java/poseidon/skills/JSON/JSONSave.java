@@ -28,6 +28,8 @@ import poseidon.skills.skill.SkillMapper;
 
 import java.io.*;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -77,6 +79,12 @@ public class JSONSave {
         }
         if(players.getBoundKampf() != null) {
             obj.put("KampfSkill", players.getBoundKampf().getName());
+        }
+        if(players.getBerufChange() != null) {
+            obj.put("BerufChange", localDateTimeToString(players.getBerufChange()));
+        }
+        if(players.getKampfChange() != null){
+            obj.put("KampfChange", localDateTimeToString(players.getKampfChange()));
         }
         String s = "null";
         if (players.getHometown() != null) {
@@ -512,4 +520,16 @@ public class JSONSave {
 
         }
     }
+    private static final String DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
+
+    public static String localDateTimeToString(LocalDateTime dateTime) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_TIME_FORMAT);
+        return dateTime.format(formatter);
+    }
+
+    public static LocalDateTime stringToLocalDateTime(String strDateTime) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_TIME_FORMAT);
+        return LocalDateTime.parse(strDateTime, formatter);
+    }
+
 }

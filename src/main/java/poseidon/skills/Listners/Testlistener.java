@@ -43,10 +43,9 @@ public class Testlistener implements Listener {
         ManaMap.getMana().putIfAbsent(players.getPlayer(), players.getKampfLevel() + players.getKampfklasse().getBaseMana());
         invReset(players.getPlayer());
         new ManaMap(players.getPlayer()).refreshManaBar();
-        CooldownSystem cooldownSystem = CooldownSystem.registerPlayer(players.getPlayer());
-        if(cooldownSystem != null){
-            cooldownSystem.startCooldowns();
-        }
+        CooldownSystem.registerPlayer(players.getPlayer());
+        CooldownSystem cooldownSystem = CooldownSystem.getbyPlayer(players.getPlayer());
+        cooldownSystem.restartCooldowns();
     }
 
     @EventHandler
