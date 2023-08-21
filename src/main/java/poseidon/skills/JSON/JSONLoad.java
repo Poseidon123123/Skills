@@ -14,6 +14,7 @@ import org.bukkit.inventory.recipe.CraftingBookCategory;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import poseidon.skills.Chat.ChatAPI;
 import poseidon.skills.CustomItems.CustomItem;
 import poseidon.skills.CustomItems.CustomShapedRecipe;
 import poseidon.skills.CustomItems.CustomShapelessRecipe;
@@ -39,6 +40,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import static poseidon.skills.JSON.JSONSave.getBerufKlassDic;
+
 public class JSONLoad {
 
     public static Players load(Player player){
@@ -47,47 +50,26 @@ public class JSONLoad {
             JSONParser parser = new JSONParser();
             try(Reader reader = new FileReader(st)){
                 JSONObject object = (JSONObject) parser.parse(reader);
-                String berufklasse = (String) object.get("Berufklasse");
-                Berufklasse klassen1 = Berufklasse.getOfArray(berufklasse);
-                String kampfklasse = (String) object.get("Kampfklasse");
-                Kampfklassen kampfklassen = Kampfklassen.getOfArray(kampfklasse);
-                long beruflevel = (long) object.get("Beruflevel");
-                long berufXP = (long) object.get("BerufXP");
-                long kampflevel = (long) object.get("Kampflevel");
-                long kampfXP = (long) object.get("KampfXP");
-                long Mana = (long) object.get("Mana");
+                Berufklasse klassen1 = object.containsKey("Berufklasse") ? Berufklasse.getOfArray((String) object.get("Berufklasse")) : Berufklasse.Unchosed;
+                Kampfklassen kampfklassen = object.containsKey("Kampfklasse") ? Kampfklassen.getOfArray((String) object.get("Kampfklasse")) : Kampfklassen.Unchosed;
+                long beruflevel = object.containsKey("Beruflevel") ? (long) object.get("Beruflevel") : 0;
+                long berufXP = object.containsKey("BerufXP") ? (long) object.get("BerufXP") : 0;
+                long kampflevel = object.containsKey("Kampflevel") ? (long) object.get("Kampflevel") : 0;
+                long kampfXP = object.containsKey("KampfXP") ? (long) object.get("KampfXP") : 0;
+                long Mana = object.containsKey("Mana") ? (long) object.get("Mana") : 0;
                 new ManaMap(player).setManaValue((int) Mana);
-                long money = (long) object.get("Money");
+                long money = object.containsKey("Money") ? (long) object.get("Money") : 0;
                 String cityName = (String) object.get("City");
-                City city;
-                if(!cityName.equals("null")) {
-                    city = CityMapper.getByName(cityName);
-                }
-                else {
-                    city = null;
-                }
-                ItemStack berufItem = JSONSave.itemFrom64((String) object.get("BerufItem"));
-                BerufSkills berufSkills = null;
-                if(object.containsKey("BerufSkill")) {
-                    String skillname = (String) object.get("BerufSkill");
-                    berufSkills = SkillMapper.getOfBerufArray(skillname);
-                }
-                ItemStack kampfItem = JSONSave.itemFrom64((String) object.get("KampfItem"));
-                KampfSkills kampfSkills = null;
-                if(object.containsKey("KampfSkill")){
-                    String name = (String) object.get("KampfSkill");
-                    kampfSkills = SkillMapper.getOfKampfArray(name);
-                }
-                LocalDateTime berufChange = null;
-                if(object.containsKey("BerufChange")){
-                    berufChange = JSONSave.stringToLocalDateTime((String) object.get("BerufChange"));
-                }
-                LocalDateTime kampfChange = null;
-                if(object.containsKey("KampfChange")){
-                    kampfChange = JSONSave.stringToLocalDateTime((String) object.get("KampfChange"));
-                }
+                City city = !cityName.equals("null") ? CityMapper.getByName(cityName) : null;
+                ItemStack berufItem = object.containsKey("BerufItem") ? JSONSave.itemFrom64((String) object.get("BerufItem")) : null;
+                BerufSkills berufSkills = object.containsKey("BerufSkill") ? SkillMapper.getOfBerufArray((String) object.get("BerufSkill")) : null;
+                ItemStack kampfItem = object.containsKey("KampfItem") ? JSONSave.itemFrom64((String) object.get("KampfItem")) : null;
+                KampfSkills kampfSkills = object.containsKey("KampfSkill") ?  SkillMapper.getOfKampfArray((String) object.get("KampfSkill")) : null;
+                LocalDateTime berufChange = object.containsKey("BerufChange") ? JSONSave.stringToLocalDateTime((String) object.get("BerufChange")) : null;
+                LocalDateTime kampfChange = (object.containsKey("KampfChange")) ? JSONSave.stringToLocalDateTime((String) object.get("KampfChange")) : null;
+                ChatAPI.Chats chats = object.containsKey("Chat") ? ChatAPI.Chats.getByKurz((String) object.get("Chat")) : ChatAPI.Chats.GlobalChat;
                 return new Players(player, klassen1, kampfklassen, (int) beruflevel, (int) berufXP, (int) kampflevel, (int) kampfXP, (int) money, city, berufItem,
-                        berufSkills, kampfItem, kampfSkills, berufChange, kampfChange);
+                        berufSkills, kampfItem, kampfSkills, berufChange, kampfChange, chats);
             } catch (IOException | ParseException e) {
                 throw new RuntimeException(e);
             }
@@ -116,7 +98,6 @@ public class JSONLoad {
                 while (object.containsKey("Bürger" + x)){
                     String burgername = (String) object.get("Bürger" + x);
                     UUID uuid1 = UUID.fromString(burgername);
-                    System.out.println("Bürger" + x);
                     buergerList.add(uuid1);
                     x++;
                 }
@@ -153,27 +134,13 @@ public class JSONLoad {
                 String  keyString = (String) object.get("Key");
                 NamespacedKey key = NamespacedKey.fromString(keyString);
                 String resultData = (String) object.get("ResultItemData");
-                CraftingBookCategory category = CraftingBookCategory.valueOf((String) object.get("Category"));
+                CraftingBookCategory category = CraftingBookCategory.valueOf(object.containsKey("Category") ? (String) object.get("Category") : CraftingBookCategory.MISC.name());
                 String shapeString = (String) object.get("shape");
                 ItemStack result = JSONSave.itemFrom64(resultData);
-                Berufklasse berufklasse = Berufklasse.Unchosed;
-                Kampfklassen kampfklassen = Kampfklassen.Unchosed;
-                int berufLevel = -1;
-                int kampfLevel = -1;
-                if(object.containsKey("beruf")) {
-                    berufklasse = Berufklasse.getOfArray((String) object.get("beruf"));
-                }
-                if(object.containsKey("kampf")){
-                    kampfklassen = Kampfklassen.getOfArray((String) object.get("kampf"));
-                }
-                if(object.containsKey("berufLevel")){
-                    long berufLevel1 = (long) object.get("berufLevel");
-                    berufLevel = (int) berufLevel1;
-                }
-                if(object.containsKey("kampfLevel")){
-                    long kampfLevel1 = (long) object.get("kampfLevel");
-                    kampfLevel = (int) kampfLevel1;
-                }
+                Berufklasse berufklasse = object.containsKey("beruf") ? Berufklasse.getOfArray((String) object.get("beruf")) : Berufklasse.Unchosed;
+                Kampfklassen kampfklassen = object.containsKey("kampf") ? Kampfklassen.getOfArray((String) object.get("kampf")) : Kampfklassen.Unchosed;
+                int berufLevel = Math.toIntExact(object.containsKey("berufLevel") ? (long) object.get("berufLevel") : -1);
+                int kampfLevel = Math.toIntExact(object.containsKey("kampfLevel") ? (long) object.get("kampfLevel") : -1);
                 int b = 1;
                 assert key != null;
                 ShapedRecipe recipe = new ShapedRecipe(key, result);
@@ -206,24 +173,10 @@ public class JSONLoad {
                 String resultData = (String) object.get("ResultItemData");
                 CraftingBookCategory category = CraftingBookCategory.valueOf((String) object.get("Category"));
                 ItemStack result = JSONSave.itemFrom64(resultData);
-                Berufklasse berufklasse = Berufklasse.Unchosed;
-                Kampfklassen kampfklassen = Kampfklassen.Unchosed;
-                int berufLevel = -1;
-                int kampfLevel = -1;
-                if(object.containsKey("beruf")) {
-                    berufklasse = Berufklasse.getOfArray((String) object.get("beruf"));
-                }
-                if(object.containsKey("kampf")){
-                    kampfklassen = Kampfklassen.getOfArray((String) object.get("kampf"));
-                }
-                if(object.containsKey("berufLevel")){
-                    long berufLevel1 = (long) object.get("berufLevel");
-                    berufLevel = (int) berufLevel1;
-                }
-                if(object.containsKey("kampfLevel")){
-                    long kampfLevel1 = (long) object.get("kampfLevel");
-                    kampfLevel = (int) kampfLevel1;
-                }
+                Berufklasse berufklasse = object.containsKey("beruf") ? Berufklasse.getOfArray((String) object.get("beruf")) : Berufklasse.Unchosed;
+                Kampfklassen kampfklassen = object.containsKey("kampf") ? Kampfklassen.getOfArray((String) object.get("kampf")) : Kampfklassen.Unchosed;
+                int berufLevel = Math.toIntExact(object.containsKey("berufLevel") ? (long) object.get("berufLevel") : -1);
+                int kampfLevel = Math.toIntExact(object.containsKey("kampfLevel") ? (long) object.get("kampfLevel") : -1);
                 int b = 1;
                 assert key != null;
                 ShapelessRecipe recipe = new ShapelessRecipe(key,result);
@@ -240,7 +193,6 @@ public class JSONLoad {
             }
         }
     }
-
     public static void loadCustomItems(){
         File f = new File(JSONSave.getCustomItemListDic());
         File[] files = f.listFiles();
@@ -267,10 +219,8 @@ public class JSONLoad {
             }
         }
     }
-
-
     public static void loadKlassen(){
-        File f = new File(JSONSave.getBerufKlassDic());
+        File f = new File(getBerufKlassDic());
         File[] files = f.listFiles();
         if(files == null){
             return;
@@ -303,7 +253,6 @@ public class JSONLoad {
             }
         }
     }
-
     public static void loadXP(){
         for(JSONSave.location location : JSONSave.location.values()) {
             File f = new File(location.getPath());
@@ -326,8 +275,6 @@ public class JSONLoad {
             }
         }
     }
-
-
     public static void loadKampfSkills(){
         File f = new File(JSONSave.getKampfSkillDic());
         File[] files = f.listFiles();
@@ -355,7 +302,6 @@ public class JSONLoad {
         }
 
     }
-
     public static void loadBerufSkills() {
         File f = new File(JSONSave.getBerufSkillDic());
         File[] files = f.listFiles();
@@ -381,7 +327,6 @@ public class JSONLoad {
             }
         }
     }
-
     public static void loadMobXP(){
         File f = new File(JSONSave.getMobsPath());
         File[] files = f.listFiles();
@@ -392,7 +337,7 @@ public class JSONLoad {
             JSONParser parser = new JSONParser();
             try (Reader reader = new FileReader(file)){
                 JSONObject object = (JSONObject) parser.parse(reader);
-                String entity = (String)object.get("Entity");
+                String entity = (String) object.get("Entity");
                 long integer = (long) object.get("XP");
                 EntityType entityType = EntityType.ZOMBIE;
                 for(EntityType entityType1 : EntityType.values()){

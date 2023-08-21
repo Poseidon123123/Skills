@@ -65,11 +65,16 @@ public class City {
         buerger.forEach(buerger -> buergerlist.add(Bukkit.getPlayer(buerger)));
         return buergerlist;
     }
-
-    public void adBuerger(UUID buerger) {
-        this.buerger.add(buerger);
+    public boolean hasPlayer(Player player){
+        return buerger.contains(player.getUniqueId());
     }
 
+    public void addBuerger(UUID buerger) {
+        this.buerger.add(buerger);
+    }
+    public void removeBuerger(UUID buerger){
+        this.buerger.remove(buerger);
+    }
     public String getCityName() {
         return cityName;
     }

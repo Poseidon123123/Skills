@@ -1,6 +1,7 @@
 package poseidon.skills;
 
 import org.bukkit.Material;
+import org.bukkit.entity.EntityType;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
 import poseidon.skills.Klassen.Berufklasse;
@@ -66,5 +67,8 @@ public class XPObjekt {
         XPObjekt.register(new XPObjekt(Material.BIRCH_LOG, Berufklasse.XPSource.Wooding, 1,2));
         XPObjekt.register(new XPObjekt(Material.WHEAT, Berufklasse.XPSource.Farming,1,2));
         XPObjekt.register(new XPObjekt(Material.CARROTS, Berufklasse.XPSource.Farming,1,2));
+        XPMapper.addMob(EntityType.ZOMBIE, 1);
+        XPMapper.addMob(EntityType.SKELETON, 2);
+        XPMapper.addMob(EntityType.AXOLOTL, 100);
     }
 }

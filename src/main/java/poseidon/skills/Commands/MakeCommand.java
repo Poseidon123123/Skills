@@ -44,6 +44,9 @@ public class MakeCommand implements TabExecutor {
                     }
                 }
             }
+            else {
+                sender.sendMessage("Du hast keine Berechtigung dazu");
+            }
         }
         if(args.length == 2){
             if(sender.hasPermission("Skills.command.Customize.create")) {
@@ -62,7 +65,7 @@ public class MakeCommand implements TabExecutor {
                     }
                 }
             }
-            if(sender.hasPermission("Skills.command.Customize.remove")) {
+            else if(sender.hasPermission("Skills.command.Customize.remove")) {
                 if (args[0].equalsIgnoreCase("deleteBeruf")) {
                     if (Berufklasse.isOnArray(args[1])) {
                         Berufklasse a = Berufklasse.getOfArray(args[1]);
@@ -117,50 +120,52 @@ public class MakeCommand implements TabExecutor {
                         CustomItem.registerItem(new CustomItem(itemStack, Kampfklassen.getOfArray(args[2]), Berufklasse.getOfArray(args[1])));
                         player.sendMessage(ChatColor.GREEN + "Du hast ein CustomItem dem Beruf " + Berufklasse.getOfArray(args[1]).getDisplayName() + " und der Kampfklasse + " + Kampfklassen.getOfArray(args[2]) + " hinzugefügt");
                     }
-                    if (args[0].equalsIgnoreCase("newBeruf")) {
-                        Berufklasse.XPSource b = Berufklasse.XPSource.None;
-                        for (Berufklasse.XPSource a : Berufklasse.XPSource.values()) {
-                            if (a.name().equalsIgnoreCase(args[2])) {
-                                b = a;
-                                break;
-                            }
-                        }
-                        if (b.equals(Berufklasse.XPSource.None)) {
-                            sender.sendMessage("Keine XPSource erkennt, None wurdezugeordnet");
-                        }
-                        Berufklasse berufklasse = new Berufklasse(args[1], b);
-                        if (Berufklasse.addToTest(berufklasse)) {
-                            sender.sendMessage("Die Berufklasse " + berufklasse.getDisplayName() + " wurde hinzugefügt");
-                        }
-                    }
-                    if (args[0].equalsIgnoreCase("newKampf")) {
-                        Kampfklassen kampfklassen = new Kampfklassen(args[1], stringToInt(args[2], player));
-                        if (Kampfklassen.addKlasse(kampfklassen)) {
-                            sender.sendMessage("Die Kampfklasse " + kampfklassen.getDisplayName() + " wurde hinzugefügt");
-                        }
-
-                    }
-                    if (args[0].equalsIgnoreCase("newMobXP")) {
-                        EntityType entityType = EntityType.ZOMBIE;
-                        boolean changed = false;
-                        for (EntityType entityType1 : EntityType.values()) {
-                            if (entityType1.equals(EntityType.UNKNOWN)) {
-                                continue;
-                            }
-                            if (entityType1.getTranslationKey().equals(args[1])) {
-                                entityType = entityType1;
-                                changed = true;
-                            }
-                        }
-                        if (!changed) {
-                            player.sendMessage("Keinen Typen erkannt Zombie wurde standartmäßig gesetzt");
-                        }
-                        int xp = stringToInt(args[2], player);
-                        XPMapper.addMob(entityType, xp);
-                    }
-                } else {
-                    sender.sendMessage("Du hast keine Berechtigung dafür");
                 }
+                if (args[0].equalsIgnoreCase("newBeruf")) {
+                    Berufklasse.XPSource b = Berufklasse.XPSource.None;
+                    for (Berufklasse.XPSource a : Berufklasse.XPSource.values()) {
+                        if (a.name().equalsIgnoreCase(args[2])) {
+                            b = a;
+                            break;
+                        }
+                    }
+                    if (b.equals(Berufklasse.XPSource.None)) {
+                        sender.sendMessage("Keine XPSource erkennt, None wurdezugeordnet");
+                    }
+                    Berufklasse berufklasse = new Berufklasse(args[1], b);
+                    if (Berufklasse.addToTest(berufklasse)) {
+                        sender.sendMessage("Die Berufklasse " + berufklasse.getDisplayName() + " wurde hinzugefügt");
+                    }
+                }
+                if (args[0].equalsIgnoreCase("newKampf")) {
+                    Kampfklassen kampfklassen = new Kampfklassen(args[1], stringToInt(args[2], player));
+                    if (Kampfklassen.addKlasse(kampfklassen)) {
+                        sender.sendMessage("Die Kampfklasse " + kampfklassen.getDisplayName() + " wurde hinzugefügt");
+                    }
+
+                }
+                if (args[0].equalsIgnoreCase("newMobXP")) {
+                    EntityType entityType = EntityType.ZOMBIE;
+                    boolean changed = false;
+                    for (EntityType entityType1 : EntityType.values()) {
+                        if (entityType1.equals(EntityType.UNKNOWN)) {
+                            continue;
+                        }
+                        if (entityType1.getTranslationKey().equals(args[1])) {
+                            entityType = entityType1;
+                            changed = true;
+                        }
+                    }
+                    if (!changed) {
+                        player.sendMessage("Keinen Typen erkannt Zombie wurde standartmäßig gesetzt");
+                    }
+                    int xp = stringToInt(args[2], player);
+                    XPMapper.addMob(entityType, xp);
+                    player.sendMessage("Du hast einen weiteren MobXp Eintrag gemacht");
+                }
+            }
+            else {
+                sender.sendMessage("Du hast keine Berechtigung dafür");
             }
         }
         if (args.length == 5) {

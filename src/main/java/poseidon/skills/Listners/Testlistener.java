@@ -11,10 +11,9 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerKickEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
+import poseidon.skills.Chat.ChatAPI;
 import poseidon.skills.CooldownSystem;
 import poseidon.skills.JSON.JSONLoad;
 import poseidon.skills.JSON.JSONSave;
@@ -46,6 +45,27 @@ public class Testlistener implements Listener {
         CooldownSystem.registerPlayer(players.getPlayer());
         CooldownSystem cooldownSystem = CooldownSystem.getbyPlayer(players.getPlayer());
         cooldownSystem.restartCooldowns();
+    }
+
+    @EventHandler
+    public void PlayerMessage(AsyncPlayerChatEvent event){
+        event.setCancelled(true);
+        Players players = KlassChoose.getPlayers(event.getPlayer());
+        ChatAPI.Chats chats = players.getChat();
+        if(chats.getPermission() != null){
+            if(event.getPlayer().hasPermission(chats.getPermission())){
+                ChatAPI.sendMessageInChat(players.getPlayer(), chats, event.getMessage());
+            }
+            else {
+                event.getPlayer().sendMessage("§4Du hast den Chat ausgebelndet, nutze /chat show [chat] um ihn wieder einzublenden! Dein Chat wurde zurückgesetzt");
+                players.setChat(ChatAPI.Chats.GlobalChat);
+            }
+        }
+        else {
+
+
+            ChatAPI.sendMessageInChat(players.getPlayer(), chats, event.getMessage());
+        }
     }
 
     @EventHandler

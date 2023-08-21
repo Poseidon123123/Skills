@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
-
+@SuppressWarnings("unchecked")
 public class JSONSave {
 
 
@@ -44,7 +44,7 @@ public class JSONSave {
         new File(getKampfKlassDic()).mkdirs();
         new File(getKampfSkillDic()).mkdirs();
         new File(getBerufSkillDic()).mkdirs();
-        new File(getHostileMobDic()).mkdirs();
+        new File(getXPPath()).mkdirs();
         new File(getFishingPath()).mkdirs();
         new File(getMiningPath()).mkdirs();
         new File(getWoodingPath()).mkdirs();
@@ -54,8 +54,8 @@ public class JSONSave {
         new File(getCustomShapedRecipeDic()).mkdirs();
         new File(getCustomItemListDic()).mkdirs();
         new File(getCustomShapelessRecipeDic()).mkdirs();
+        new File(getPluginDic()).mkdirs();
     }
-
     public static void playerSave(Player player) {
         System.out.println("PlayerSave");
         JSONObject obj = new JSONObject();
@@ -90,6 +90,7 @@ public class JSONSave {
         if (players.getHometown() != null) {
             s = players.getHometown().getCityName();
         }
+        obj.put("Chat", players.getChat().getKurz());
         obj.put("City", s);
         File fileer = new File(dicPath);
         fileer.mkdir();
@@ -100,8 +101,6 @@ public class JSONSave {
         }
         System.out.println("Player save done");
     }
-
-
     public static void generateDestroyFIles(List<XPObjekt> map) {
         map.forEach(xpObjekt -> {
             for (JSONSave.location location : location.values()) {
@@ -112,7 +111,6 @@ public class JSONSave {
             }
         });
     }
-
     public static void generateDestroyFIles(XPObjekt xpObjekt, location location) {
         JSONObject object = new JSONObject();
         object.put("Item", xpObjekt.getMaterial().toString());
@@ -125,7 +123,6 @@ public class JSONSave {
             e.printStackTrace();
         }
     }
-
     public static void generateDestroyFIles(List<XPObjekt> map, location location) {
         map.forEach((xpObjekt) -> {
             JSONObject object = new JSONObject();
@@ -140,8 +137,6 @@ public class JSONSave {
             }
         });
     }
-
-
     public static void kampfKlassenSave() {
         Kampfklassen.getKlassen().forEach((klassen) -> {
             JSONObject object = new JSONObject();
@@ -154,7 +149,6 @@ public class JSONSave {
             }
         });
     }
-
     public static void kampfSkillSave() {
         for (KampfSkills kampfSkills : SkillMapper.getKampfSkills()) {
             JSONObject object = new JSONObject();
@@ -172,7 +166,6 @@ public class JSONSave {
             }
         }
     }
-
     public static String convertToString(String[] array) {
         StringBuilder result = new StringBuilder();
 
@@ -185,7 +178,6 @@ public class JSONSave {
 
         return result.toString();
     }
-
     public static void saveShapelessRecipes(){
         CustomShapelessRecipe.getCustomShapedRecipeHashMap().forEach((key, shapelessRecipe) -> {
             JSONObject object = new JSONObject();
@@ -216,8 +208,6 @@ public class JSONSave {
             }
         });
     }
-
-
     public static void saveShapedRecipes() {
         CustomShapedRecipe.getCustomShapedRecipeHashMap().forEach((namespacedKey, shapedRecipe) -> {
             JSONObject object = new JSONObject();
@@ -253,7 +243,6 @@ public class JSONSave {
             }
         });
     }
-
     public static void berufSkillSave() {
         for (BerufSkills kampfSkills : SkillMapper.getBerufSkills()) {
             JSONObject object = new JSONObject();
@@ -271,7 +260,6 @@ public class JSONSave {
             }
         }
     }
-
     public static void berufKlassenSave() {
         Berufklasse.getTest().forEach((klassen) -> {
             JSONObject object = new JSONObject();
@@ -284,11 +272,10 @@ public class JSONSave {
             }
         });
     }
-
     public static void mobSave() {
         XPMapper.getMobKillXP().forEach((entityType, integer) -> {
             JSONObject object = new JSONObject();
-            object.put("Entiy", entityType.getTranslationKey());
+            object.put("Entity", entityType.getTranslationKey());
             object.put("XP", integer);
             try (FileWriter fileWriter = new FileWriter(getMobPath(entityType.getTranslationKey()))) {
                 fileWriter.write(object.toJSONString());
@@ -343,80 +330,70 @@ public class JSONSave {
             }
         }
     }
+    public static String getParentPath(String subPath) {
+        return Paths.get(getPluginpath()).getParent().getParent().resolve(subPath).toString();
+    }
 
-        public static String getPluginpath() {
+    public static String getPluginpath() {
         String Pluginpath = Skills.class.getProtectionDomain().getCodeSource().getLocation().getPath();
         if (Pluginpath.startsWith("/")) {
             Pluginpath = Pluginpath.substring(1);
         }
         return Pluginpath;
     }
-
-    //TODO Paths neu Organisieren !!
-
+    public static String getPluginDic(){
+        return getParentPath("SkillData");
+    }
     public static String getBerufKlassDic() {
-        String dic1Path = Paths.get(getPluginpath()).toFile().getParent();
-        return Paths.get(dic1Path).toFile().getParent() + "/Berufklassen/";
+        return getPluginDic() + "/Berufklassen/";
     }
 
     public static String getCityDic() {
-        String dic1Path = Paths.get(getPluginpath()).toFile().getParent();
-        return Paths.get(dic1Path).toFile().getParent() + "/Citys/";
+        return getPluginDic() + "/Citys/";
     }
 
-    public static String getHostileMobDic() {
-        String dic1Path = Paths.get(getPluginpath()).toFile().getParent();
-        return Paths.get(dic1Path).toFile().getParent() + "/XP/";
+    public static String getXPPath() {
+        return getPluginDic() + "/XP/";
     }
 
     public static String getKampfKlassDic() {
-        String dic1Path = Paths.get(getPluginpath()).toFile().getParent();
-        return Paths.get(dic1Path).toFile().getParent() + "/Kampfklasse/";
+        return getPluginDic() + "/Kampfklasse/";
     }
 
     public static String getPlayerDic() {
-        String dic1Path = Paths.get(getPluginpath()).toFile().getParent();
-        return Paths.get(dic1Path).toFile().getParent() + "/players/";
+        return getPluginDic() + "/players/";
     }
 
     public static String getKampfSkillDic() {
-        String dic1Path = Paths.get(getPluginpath()).toFile().getParent();
-        return Paths.get(dic1Path).toFile().getParent() + "/KampfSkills/";
+        return getPluginDic() + "/KampfSkills/";
     }
 
     public static String getBerufSkillDic() {
-        String dic1Path = Paths.get(getPluginpath()).toFile().getParent();
-        return Paths.get(dic1Path).toFile().getParent() + "/BerufSkills/";
+        return getPluginDic() + "/BerufSkills/";
     }
 
     public static String getFishingPath() {
-        String path = getHostileMobDic() + "/Fishing/";
-        return path;
+        return getXPPath() + "/Fishing/";
     }
 
     public static String getMiningPath() {
-        String path = getHostileMobDic() + "/Mining/";
-        return path;
+        return getXPPath() + "/Mining/";
     }
 
     public static String getWoodingPath() {
-        String path = getHostileMobDic() + "/Chopping/";
-        return path;
+        return getXPPath() + "/Chopping/";
     }
 
     public static String getFarmingPath() {
-        String path = getHostileMobDic() + "/Farming/";
-        return path;
+        return getXPPath() + "/Farming/";
     }
 
     public static String getMobsPath() {
-        String path = getHostileMobDic() + "/Mobs/";
-        return path;
+        return getXPPath() + "/Mobs/";
     }
 
     public static String getCustomItemDic() {
-        String dic1Path = Paths.get(getPluginpath()).toFile().getParent();
-        return Paths.get(dic1Path).toFile().getParent() + "/CustomItems/";
+        return getPluginDic() + "/CustomItems/";
     }
 
     public static String getCustomItemListDic() {

@@ -105,6 +105,15 @@ public class CityCommand implements TabExecutor {
                     }
                 }
             }
+            if(args[0].equalsIgnoreCase("leave")){
+                if (players.getHometown() == null) {
+                    String a = getInstance().message("Messages.City.invite.noCity");
+                    System.out.println(a);
+                    player.sendMessage(Objects.requireNonNull(a));
+                    return true;
+                }
+                player.sendMessage(Skills.getInstance().message("Messages.City.leave.noCity"));
+            }
         }
         if (args.length == 2) {
             if (args[0].equalsIgnoreCase("create")) {
@@ -121,10 +130,7 @@ public class CityCommand implements TabExecutor {
                     player.sendMessage(getInstance().message("Messages.City.CityExists"));
                     return true;
                 }
-                if (!KlassChoose.getPlayers(player).removeMoney(getInstance().value("Values.Money.CreateCity"))) {
-                    String a = getInstance().message("Messages.City.create.NoMoney");
-                    a = a.replace("{money}", String.valueOf(getInstance().value("Values.Money.CreateCity")));
-                    player.sendMessage(a);
+                if (KlassChoose.getPlayers(player).removeMoney(getInstance().value("Values.Money.CreateCity"))) {
                     if (args[1].equalsIgnoreCase("Dummy")) {
                         city = new City("Dummy", UUID.randomUUID(), player.getLocation().getChunk());
                         players.addMoney(getInstance().value("Values.Money.CreateCity"));
@@ -136,6 +142,11 @@ public class CityCommand implements TabExecutor {
                     String message = getInstance().message("Messages.City.create.succsess");
                     message.replace("{name}", args[1]);
                     player.sendMessage(message);
+                }
+                else {
+                    String a = getInstance().message("Messages.City.create.NoMoney");
+                    a = a.replace("{money}", String.valueOf(getInstance().value("Values.Money.CreateCity")));
+                    player.sendMessage(a);
                 }
             }
             if (args[0].equalsIgnoreCase("deposit")) {
@@ -157,7 +168,6 @@ public class CityCommand implements TabExecutor {
             if (args[0].equalsIgnoreCase("addPlayer")) {
                 if (players.getHometown() == null) {
                     String a = getInstance().message("Messages.City.invite.noCity");
-                    System.out.println(a);
                     player.sendMessage(Objects.requireNonNull(a));
                     return true;
                 }
@@ -184,7 +194,7 @@ public class CityCommand implements TabExecutor {
                 if (cityMapper.hasOffer()) {
                     for (City city : cityMapper.getOffers()) {
                         if (city.getCityName().equals(args[1])) {
-                            city.adBuerger(player.getUniqueId());
+                            city.addBuerger(player.getUniqueId());
                             players.setHometown(city);
                             cityMapper.offersDone();
                             String a = getInstance().message("Messages.City.deposit.sucsess");
@@ -192,6 +202,51 @@ public class CityCommand implements TabExecutor {
                             player.sendMessage(a);
                         }
                     }
+                }
+            }
+            if (args[0].equalsIgnoreCase("kick")){
+                if (players.getHometown() == null) {
+                    String a = getInstance().message("Messages.City.invite.noCity");
+                    System.out.println(a);
+                    player.sendMessage(Objects.requireNonNull(a));
+                    return true;
+                }
+                if (!players.getHometown().getBuergermeisterUUID().equals(player.getUniqueId())) {
+                    player.sendMessage(getInstance().message("Messages.City.invite.noMeister"));
+                    return true;
+                }
+                Player player1 = Bukkit.getPlayerExact(args[1]);
+                if (player1 == null) {
+                    String a = getInstance().message("Messages.noPlayerFound");
+                    a.replace("{name}", args[1]);
+                    player.sendMessage(a);
+                    return true;
+                }
+                if(!players.getHometown().hasPlayer(player1)){
+                    String a = Skills.getInstance().message("Messages.City.kick.PlayerNotInCity");
+                    a.replace("{player}", player1.getName());
+                    player.sendMessage(a);
+                    return true;
+                }
+                Players players1 = KlassChoose.getPlayers(player1);
+                players1.setHometown(null);
+                players.getHometown().removeBuerger(player1.getUniqueId());
+                return true;
+            }
+            if(args[0].equalsIgnoreCase("leave")){
+                if (players.getHometown() == null) {
+                    String a = getInstance().message("Messages.City.invite.noCity");
+                    System.out.println(a);
+                    player.sendMessage(Objects.requireNonNull(a));
+                    return true;
+                }
+                if(CityMapper.getByName(args[1]) != null && CityMapper.getByName(args[1]) == players.getHometown()){
+                    players.getHometown().removeBuerger(player.getUniqueId());
+                    players.setHometown(null);
+                    return true;
+                }
+                else {
+                    player.sendMessage(Skills.getInstance().message("Messages.City.leave.wrongCity"));
                 }
             }
         }

@@ -3,6 +3,7 @@ version: '${project.version}'
 main: poseidon.skills.Skills
 api-version: 1.19
 author: Poseidon12345
+depend: [LuckPerms]
 commands:
   Class:
     description: to choose a Class
@@ -48,6 +49,12 @@ commands:
     usage: /<command>
     permission:
       Skills.command.farmwelt
+  Chat:
+    description: to mange Chats
+    usage: /<command>
+    permission:
+      Skills.command.chat
+
 permissions:
   Skills.command.*:
     description: gives all Commandperms
@@ -59,8 +66,11 @@ permissions:
       Skills.command.setClass: true
       Skills.command.City: true
       Skills.command.farmwelt.create: true
+      Skills.command.chat: true
 
-
+  Skills.command.chat:
+    description: to use /chat
+    default: true
   Skills.command.farmwelt:
     description: to manage the farmwelt
     default: true
@@ -142,3 +152,12 @@ permissions:
   Skills.command.DB:
     description: Perm to use command
     default: op
+  Skills.chat.Help:
+    description: to see and use the help-Chat
+    default: false
+  Skills.chat.Admin:
+    description: to see and use the admin-Chat
+    default: op
+  Skills.chat.trade:
+    description: to see and use the trade-Chat
+    default: false

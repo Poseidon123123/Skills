@@ -13,6 +13,8 @@ import poseidon.skills.skill.KampfSkills;
 
 import java.time.LocalDateTime;
 
+import static poseidon.skills.Chat.ChatAPI.Chats;
+
 public class Players {
 
     private final Player player;
@@ -33,6 +35,7 @@ public class Players {
     private KampfSkills boundKampf;
     private LocalDateTime berufChange;
     private LocalDateTime kampfChange;
+    private Chats chat = Chats.GlobalChat;
 
     public Players(Player player, Berufklasse berufklasse, Kampfklassen kampfklasse){
         this.player = player;
@@ -54,7 +57,7 @@ public class Players {
 
     public Players(Player player, Berufklasse berufklasse, Kampfklassen kampfklasse, int berufLevel, int berufXP, int kampfLevel,
                    int kampfXP, int money, City hometown, ItemStack berufSkillItem, BerufSkills berufSkills,
-                   ItemStack kampfItemSkill, KampfSkills kampfSkills, LocalDateTime berufChange, LocalDateTime kampfChange){
+                   ItemStack kampfItemSkill, KampfSkills kampfSkills, LocalDateTime berufChange, LocalDateTime kampfChange, Chats chat){
         this.player = player;
         this.berufklasse = berufklasse;
         this.kampfklasse = kampfklasse;
@@ -79,7 +82,7 @@ public class Players {
         this.boundBeruf = berufSkills;
         this.berufChange = berufChange;
         this.kampfChange = kampfChange;
-
+        this.chat = chat;
     }
 
     public Player getPlayer() {
@@ -251,5 +254,13 @@ public class Players {
     }
     public LocalDateTime getKampfChange(){
         return kampfChange;
+    }
+
+    public Chats getChat() {
+        return chat;
+    }
+
+    public void setChat(Chats chat) {
+        this.chat = chat;
     }
 }

@@ -36,17 +36,6 @@ import java.util.Objects;
 
 public class SkillListener implements Listener {
 
-    private static boolean aktivator(PlayerItemHeldEvent event, String command, int cooldown, int mana){
-        ItemStack item = event.getPlayer().getInventory().getItem(event.getNewSlot());
-        ManaMap map = new ManaMap(event.getPlayer());
-        boolean a = map.useMana(mana);
-        if(a) {
-            RunSkills.decode(event.getPlayer(), command);
-            Objects.requireNonNull(item).setAmount(cooldown);
-            cooldown(item, event.getPlayer(), cooldown - 1);
-        }
-        return a;
-    }
     @EventHandler(ignoreCancelled = true)
     public void pickUp(EntityPickupItemEvent event){
         if(!(event.getEntity() instanceof Player player)){
@@ -76,6 +65,37 @@ public class SkillListener implements Listener {
         if (item == null || item.getType().isAir()) {
             return;
         }
+        for (KampfSkills b : SkillMapper.getKampfSkills()) {
+            if (item.isSimilar(b.getIcon())) {
+                event.setCancelled(true);
+                CooldownSystem cooldownSystem = CooldownSystem.getbyPlayer(event.getPlayer());
+                if(!cooldownSystem.hasCoolDown(b)) {
+                    ManaMap map = new ManaMap(event.getPlayer());
+                    if(map.useMana(b.getConsumedMana())) {
+                        RunSkills.decode(event.getPlayer(), b.getCommand());
+                        event.getPlayer().sendMessage(ChatColor.BLUE + "Der Skill " + b.getName() + " wurde ausgeführt");
+                        ItemStack item1 = event.getPlayer().getInventory().getItem(event.getNewSlot());
+                        cooldownSystem.addCoolDown(b, b.getCooldown(), item1, event.getPlayer());
+                    }
+                }
+                return;
+            }
+        }
+        for (BerufSkills b : SkillMapper.getBerufSkills()) {
+            if (item.isSimilar(b.getIcon())) {
+                CooldownSystem cooldownSystem = CooldownSystem.getbyPlayer(event.getPlayer());
+                if(!cooldownSystem.hasCoolDown(b)) {
+                    ManaMap map = new ManaMap(event.getPlayer());
+                    if(map.useMana(b.getConsumedMana())) {
+                        RunSkills.decode(event.getPlayer(), b.getCommand());
+                        event.getPlayer().sendMessage(ChatColor.BLUE + "Der Skill " + b.getName() + " wurde ausgeführt");
+                        ItemStack item1 = event.getPlayer().getInventory().getItem(event.getNewSlot());
+                        cooldownSystem.addCoolDown(b, b.getCooldown(), item1, event.getPlayer());
+                    }
+                }
+                return;
+            }
+        }
         CustomItem customItem = CustomItem.getByName(Objects.requireNonNull(item.getItemMeta()).getDisplayName());
         if(customItem == null){
             return;
@@ -92,37 +112,6 @@ public class SkillListener implements Listener {
             if(!KlassChoose.getPlayers(event.getPlayer()).getBerufklasse().equals(kampfklassen)){
                 event.getPlayer().getInventory().remove(item);
                 event.getPlayer().getWorld().dropItemNaturally(event.getPlayer().getLocation(), item).setPickupDelay(100);
-            }
-        }
-        for (KampfSkills b : SkillMapper.getKampfSkills()) {
-            if (item.isSimilar(b.getIcon())) {
-                event.setCancelled(true);
-                CooldownSystem cooldownSystem = CooldownSystem.getbyPlayer(event.getPlayer());
-                if(cooldownSystem.hasCoolDown(b)) {
-                    ManaMap map = new ManaMap(event.getPlayer());
-                    if(map.useMana(b.getConsumedMana())) {
-                        RunSkills.decode(event.getPlayer(), b.getCommand());
-                        event.getPlayer().sendMessage(ChatColor.BLUE + "Der Skill " + b.getName() + " wurde ausgeführt");
-                        ItemStack item1 = event.getPlayer().getInventory().getItem(event.getNewSlot());
-                        cooldownSystem.addCoolDown(b, b.getCooldown(), item1, event.getPlayer());
-                    }
-                }
-                return;
-            }
-        }
-        for (BerufSkills b : SkillMapper.getBerufSkills()) {
-            if (item.isSimilar(b.getIcon())) {
-                CooldownSystem cooldownSystem = CooldownSystem.getbyPlayer(event.getPlayer());
-                if(cooldownSystem.hasCoolDown(b)) {
-                    ManaMap map = new ManaMap(event.getPlayer());
-                    if(map.useMana(b.getConsumedMana())) {
-                        RunSkills.decode(event.getPlayer(), b.getCommand());
-                        event.getPlayer().sendMessage(ChatColor.BLUE + "Der Skill " + b.getName() + " wurde ausgeführt");
-                        ItemStack item1 = event.getPlayer().getInventory().getItem(event.getNewSlot());
-                        cooldownSystem.addCoolDown(b, b.getCooldown(), item1, event.getPlayer());
-                    }
-                }
-                return;
             }
         }
     }
@@ -153,18 +142,13 @@ public class SkillListener implements Listener {
         }
         Player player = event.getPlayer();
         Players players = KlassChoose.getPlayers(player);
-        System.out.println(1);
         if(event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-            System.out.println(2);
             if (players.getKampfItemSkill() != null && players.getKampfItemSkill().isSimilar(event.getItem()) && players.getBoundKampf() != null) {
-                System.out.println(3);
                 KampfSkills b = players.getBoundKampf();
                 CooldownSystem cooldownSystem = CooldownSystem.getbyPlayer(event.getPlayer());
                 if (!cooldownSystem.hasCoolDown(b)) {
-                    System.out.println(4);
                     ManaMap map = new ManaMap(event.getPlayer());
                     if (map.useMana(b.getConsumedMana())) {
-                        System.out.println(5);
                         RunSkills.decode(event.getPlayer(), b.getCommand());
                         event.getPlayer().sendMessage(ChatColor.BLUE + "Der Skill " + b.getName() + " wurde ausgeführt");
                         cooldownSystem.addCoolDown(b, b.getCooldown());

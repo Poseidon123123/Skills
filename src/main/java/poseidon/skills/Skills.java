@@ -34,6 +34,7 @@ public final class Skills extends JavaPlugin {
         registerCommand("offer", new OfferCommand());
         registerCommand("City", new CityCommand());
         registerCommand("Farm", new FarmWeltCommand());
+        registerCommand("Chat", new ChatCommand());
         getServer().getPluginManager().registerEvents(new Testlistener(), this);
         getServer().getPluginManager().registerEvents(new SkillListener(), this);
         getServer().getPluginManager().registerEvents(new XPListener(), this);
@@ -80,6 +81,9 @@ public final class Skills extends JavaPlugin {
         addDefault("Messages.City.claim.succsess", "§2Du hast diesen Chunk beansprucht");
         addDefault("Messages.City.claim.tooFar", "§2Du kannst nur Chunks im Umkreis von {chunk} Chunk beanspruchen");
         addDefault("Messages.City.setMessage", "§2Du hast die Begrüßungsnachricht {message} gesetzt");
+        addDefault("Messages.City.leave.noCity", "&2Schreibe deine Stadt hinter 'leave' um zu bestätigen dass du die Stadt verlassen willst");
+        addDefault("Messages.City.leave.wrongCity", "$4Stadtname falsch versuches es nochmal");
+        addDefault("Messages.City.kick.PlayerNotInCity", "$4Der Spieler {player} ist nicht in deiner Stadt!");
         addDefault("Messages.City.info", "§6Stadt: {city} \nMoney: {money} \nBürgermeister: {bugerMeister} \nBürger: {listburger}");
         addDefault("Messages.Class.BerufSuccsess", "§1Du bist nun ein {Beruf}");
         addDefault("Messages.Class.noClassFouned", "§4Kein Klasse gefunden");
@@ -94,6 +98,15 @@ public final class Skills extends JavaPlugin {
         addDefault("Messages.Pay.giveMoney", "§6Du hast dem Spieler {name} {money} Money gegeben");
         addDefault("Messages.Pay.noMoney", "§4Du hast nicht genug Geld");
         addDefault("Messages.City.CityExists", "§4Es exisitert schon eine Stadt mit dem Namen {city}");
+        addDefault("Format.Chat.GlobalChat", "§2[G]{name}: {message}");
+        addDefault("Format.Chat.NationChat", " ");
+        addDefault("Format.Chat.CityChat", "§6[S]{name}: {message}");
+        addDefault("Format.Chat.LocalChat", "[L]{name}: {message}");
+        addDefault("Format.Chat.WispherChat", "§8[W]{name}: {message}");
+        addDefault("Format.Chat.ScreamChat", "§l[S]{name}: {message}");
+        addDefault("Format.Chat.HelpChat", "§c[Help]{name}: {message}");
+        addDefault("Format.Chat.AdminChat", "§5[Admin]{name}: {message}");
+        addDefault("Format.Chat.TradeChat", "§b[H]{name}: {message}");
         addDefault("Event.NotInCity.Break", "§8Du darfst hier nicht abbauen");
         addDefault("Event.NotInCity.Place", "§8Du darfst hier nicht platzieren");
         addDefault("Values.Radius.NearTown", 1);
@@ -103,6 +116,9 @@ public final class Skills extends JavaPlugin {
         addDefault("Values.Cooldown.BerufChange", 2);
         addDefault("Values.Cooldown.KampfChange", 2);
         addDefault("Values.Cooldown.TimerCheck", 12000);
+        addDefault("Values.Chat.Range.LocalChat", 10);
+        addDefault("Values.Chat.Range.WispherChat", 5);
+        addDefault("Values.Chat.Range.ScreamChat", 60);
         addDefault("Funktions.FarmWorld.MainWorldName", "");
         getConfig().options().copyDefaults(true);
         saveConfig();

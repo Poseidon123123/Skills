@@ -52,7 +52,6 @@ public class externalJarLoader {
 
                     try {
                         Class<?> cls = classLoader.loadClass(className);
-
                         Method[] methods = cls.getDeclaredMethods();
                         for (Method method : methods) {
                             methodMap.put(method.getName(), cls.getDeclaredMethod(method.getName(), method.getParameterTypes()));
