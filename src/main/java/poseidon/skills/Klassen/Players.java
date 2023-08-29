@@ -1,5 +1,6 @@
 package poseidon.skills.Klassen;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.boss.BarColor;
 import org.bukkit.entity.Player;
@@ -12,12 +13,13 @@ import poseidon.skills.skill.BerufSkills;
 import poseidon.skills.skill.KampfSkills;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 import static poseidon.skills.Chat.ChatAPI.Chats;
 
 public class Players {
 
-    private final Player player;
+    private final UUID player;
     private int berufLevel;
     private int berufXP;
     private Berufklasse berufklasse;
@@ -37,7 +39,7 @@ public class Players {
     private LocalDateTime kampfChange;
     private Chats chat = Chats.GlobalChat;
 
-    public Players(Player player, Berufklasse berufklasse, Kampfklassen kampfklasse){
+    public Players(UUID player, Berufklasse berufklasse, Kampfklassen kampfklasse){
         this.player = player;
         this.berufklasse = berufklasse;
         this.kampfklasse = kampfklasse;
@@ -55,7 +57,7 @@ public class Players {
         this.KampfItemSkill = null;
     }
 
-    public Players(Player player, Berufklasse berufklasse, Kampfklassen kampfklasse, int berufLevel, int berufXP, int kampfLevel,
+    public Players(UUID player, Berufklasse berufklasse, Kampfklassen kampfklasse, int berufLevel, int berufXP, int kampfLevel,
                    int kampfXP, int money, City hometown, ItemStack berufSkillItem, BerufSkills berufSkills,
                    ItemStack kampfItemSkill, KampfSkills kampfSkills, LocalDateTime berufChange, LocalDateTime kampfChange, Chats chat){
         this.player = player;
@@ -86,6 +88,9 @@ public class Players {
     }
 
     public Player getPlayer() {
+        return Bukkit.getPlayer(player);
+    }
+    public UUID getUUID(){
         return player;
     }
 
@@ -179,7 +184,7 @@ public class Players {
     }
     public void addMoney(int money){
         setMoney(getMoney() + money);
-        player.sendMessage(ChatColor.GREEN + "+"+ money + "$");
+        getPlayer().sendMessage(ChatColor.GREEN + "+"+ money + "$");
     }
     public boolean removeMoney(int money){
         int x = getMoney() - money;
@@ -187,7 +192,7 @@ public class Players {
             return false;
         }
         setMoney(x);
-        player.sendMessage(ChatColor.DARK_RED + "-" + money + "§");
+        getPlayer().sendMessage(ChatColor.DARK_RED + "-" + money + "§");
         return true;
     }
 
@@ -202,7 +207,6 @@ public class Players {
     public void setHometown(City hometown) {
         this.hometown = hometown;
     }
-
     @Nullable
     public ItemStack getBerufItemSkill() {
         return BerufItemSkill;

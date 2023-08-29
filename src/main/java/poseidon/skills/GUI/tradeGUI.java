@@ -22,12 +22,17 @@ public class tradeGUI {
     public static ItemStack air = GUIMaker.createGUIItems(Material.DIRT, "Error");
     public static ItemStack playerHead1;
     public static ItemStack playerHead2;
+    public static ItemStack moneyOther = GUIMaker.createGUIItems(Material.GOLD_BLOCK, "0");
+    public static ItemStack m1 = GUIMaker.createGUIItems(Material.GOLD_NUGGET, "+/-1");
+    public static ItemStack m2 = GUIMaker.createGUIItems(Material.GOLD_INGOT, "+/-10");
+    public static ItemStack m3 = GUIMaker.createGUIItems(Material.GOLD_BLOCK, "+/-100");
+    public static ItemStack money = GUIMaker.createGUIItems(Material.GOLD_INGOT, "0");
     public static final ItemStack[] contens = {
             p, p, head1, p, p, p, head2, p, p,
             p, air, air, air, loadred, placer, placer, placer, p,
             p, air, air, air, loadred, placer, placer, placer, p,
             p, air, air, air, loadred, placer, placer, placer, p,
-            p, air, air, air, loadred, placer, placer, placer, p,
+            money, m1, m2, m3, loadred, moneyOther, p, p, p,
             p, no, no, no, p, no, no, no, p
     };
     public static Inventory getTradeGUI(Player trader, Player trader1){

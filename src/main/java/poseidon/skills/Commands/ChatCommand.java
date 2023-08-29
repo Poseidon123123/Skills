@@ -25,7 +25,7 @@ public class ChatCommand implements TabExecutor {
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if (!(sender instanceof Player player)) {
             sender.sendMessage("Du musst ein Spieler sein!");
-            return false;
+            return true;
         }
         if (args.length == 0) {
             //TODO ChatChoseGUI

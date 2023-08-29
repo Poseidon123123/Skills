@@ -22,14 +22,23 @@ public class PayCommand implements TabExecutor {
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if(!(sender instanceof Player player)){
             sender.sendMessage("Du musst ein Spieler sein!");
-            return false;
+            return true;
+        }
+        if(args.length == 3) {
+            if (args[0].equalsIgnoreCase("addMoney")) {
+                Player player1 = Bukkit.getPlayerExact(args[1]);
+                if (player1 != null) {
+                    KlassChoose.getPlayer(player1.getUniqueId()).addMoney(Integer.parseInt(args[2]));
+                    return true;
+                }
+            }
         }
         Player receiver = Bukkit.getPlayerExact(args[0]);
         if(receiver != null){
             int payment = MakeCommand.stringToInt(args[1]);
             if(payment <= 0){
                 player.sendMessage(Objects.requireNonNull(getInstance().getConfig().getString("Messages.Pay.lowMoney")));
-                return false;
+                return true;
             }
             Players players = KlassChoose.getPlayers(player);
             Players revicers = KlassChoose.getPlayers(receiver);
@@ -49,9 +58,7 @@ public class PayCommand implements TabExecutor {
             }
         }
         else {
-            String a = Objects.requireNonNull(Skills.getInstance().getConfig().getString("Messages.noPlayerFound"));
-            a = a.replace("{name}", args[0]);
-            player.sendMessage(a);
+            player.sendMessage(Skills.getInstance().message("Messages.General.noPlayerFound").replace("{name}", args[0]));
         }
         return true;
     }

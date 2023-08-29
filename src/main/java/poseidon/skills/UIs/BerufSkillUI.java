@@ -53,7 +53,7 @@ public class BerufSkillUI extends UI{
                     players.setBoundBeruf(null);
                 }
             }
-            if(BerufSkills.getSkills(item) != null){
+            if(skill != null){
                 if(Objects.requireNonNull(skill).getBerufklasse().equals(KlassChoose.getPlayers(player).getBerufklasse())) {
                     if(skill.getNeededLevel() <= KlassChoose.getPlayers(player).getBerufLevel()) {
                         new BerufSlotUI(player, skill);

@@ -7,16 +7,11 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 import poseidon.skills.Skills;
+import poseidon.skills.executeSkills.Funktions;
 
 public class RunSkills {
     public static void decode(Player player, String string){
-        RunSkills runSkills = new RunSkills(player);
-        switch (string) {
-            case "B1" -> runSkills.B1();
-            case "B2" -> runSkills.B2();
-            case "BB1" -> runSkills.BB1();
-            case "BK1" -> runSkills.BK1();
-        }
+        Funktions.runByName(string,player);
     }
     private final Player player;
     public RunSkills(Player player){

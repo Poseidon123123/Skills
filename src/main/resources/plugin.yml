@@ -54,7 +54,11 @@ commands:
     usage: /<command>
     permission:
       Skills.command.chat
-
+  Nation:
+    description: to mange Nations
+    usage: /<command>
+    permission:
+      Skills.command.nation
 permissions:
   Skills.command.*:
     description: gives all Commandperms
@@ -67,7 +71,10 @@ permissions:
       Skills.command.City: true
       Skills.command.farmwelt.create: true
       Skills.command.chat: true
-
+      Skills.command.nation: true
+  Skills.command.nation:
+    description: to use /nation
+    default: op
   Skills.command.chat:
     description: to use /chat
     default: true

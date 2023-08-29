@@ -25,7 +25,6 @@ import poseidon.skills.Klassen.Kampfklassen;
 import poseidon.skills.Klassen.KlassChoose;
 import poseidon.skills.Klassen.Players;
 import poseidon.skills.ManaMap;
-import poseidon.skills.Skills;
 import poseidon.skills.runner.RunSkills;
 import poseidon.skills.skill.BerufSkills;
 import poseidon.skills.skill.KampfSkills;
@@ -159,14 +158,11 @@ public class SkillListener implements Listener {
                 }
             }
             if (players.getBerufItemSkill() != null && players.getBerufItemSkill().isSimilar(event.getItem()) && players.getBoundBeruf() != null) {
-                System.out.println(6);
                 BerufSkills b = players.getBoundBeruf();
                 CooldownSystem cooldownSystem = CooldownSystem.getbyPlayer(event.getPlayer());
                 if (!cooldownSystem.hasCoolDown(b)) {
-                    System.out.println(7);
                     ManaMap map = new ManaMap(event.getPlayer());
                     if (map.useMana(b.getConsumedMana())) {
-                        System.out.println(8);
                         RunSkills.decode(event.getPlayer(), b.getCommand());
                         event.getPlayer().sendMessage(ChatColor.BLUE + "Der Skill " + b.getName() + " wurde ausgeführt");
                         cooldownSystem.addCoolDown(b, b.getCooldown());
@@ -238,18 +234,5 @@ public class SkillListener implements Listener {
             return true;
         }
         return berufLevel > 0 && players.getBerufLevel() < berufLevel;
-    }
-
-    public static void cooldown(ItemStack item, Player player, int countDown){
-        int pos = player.getInventory().first(item);
-        if(pos < 1){
-            return;
-        }
-        while (countDown > 0){
-            int delay = countDown * 20;
-            Skills.getInstance().getServer().getScheduler().runTaskLater(Skills.getInstance(), () -> item.setAmount(item.getAmount() - 1), delay);
-            countDown--;
-        }
-
     }
 }

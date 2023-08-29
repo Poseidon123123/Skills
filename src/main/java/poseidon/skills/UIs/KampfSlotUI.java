@@ -17,8 +17,8 @@ public class KampfSlotUI extends UI{
         super(player);
         this.inv = SlotGUI.getSlotGUI(player);
         player.openInventory(this);
-        item = skills.getIcon();
         kampfSkills = skills;
+        item = skills.getIcon();
     }
     private static KampfSkills kampfSkills;
     private static ItemStack item;

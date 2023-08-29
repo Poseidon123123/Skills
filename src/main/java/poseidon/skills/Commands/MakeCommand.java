@@ -16,6 +16,8 @@ import poseidon.skills.Klassen.Berufklasse;
 import poseidon.skills.Klassen.Kampfklassen;
 import poseidon.skills.XPMapper;
 import poseidon.skills.XPObjekt;
+import poseidon.skills.executeSkills.Funktions;
+import poseidon.skills.executeSkills.Type;
 import poseidon.skills.skill.BerufSkills;
 import poseidon.skills.skill.KampfSkills;
 import poseidon.skills.skill.SkillMapper;
@@ -29,22 +31,21 @@ public class MakeCommand implements TabExecutor {
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if(!(sender instanceof Player player)){
             sender.sendMessage("Du musst ein Spieler sein!");
-            return false;
+            return true;
         }
-        if(args.length == 1){
-            if(sender.hasPermission("Skills.command.Customize.create")) {
-                if(args[0].equalsIgnoreCase("newCustomItem")){
-                    if(!player.getInventory().getItemInMainHand().getType().isAir()){
+        if(args.length == 1) {
+            if (sender.hasPermission("Skills.command.Customize.create")) {
+                if (args[0].equalsIgnoreCase("newCustomItem")) {
+                    if (!player.getInventory().getItemInMainHand().getType().isAir()) {
                         player.sendMessage(ChatColor.RED + "Du musst ein Item mit ItemMeta in der Hand halten!");
                         return true;
-                    }else {
-                     ItemStack itemStack = player.getInventory().getItemInMainHand();
-                     CustomItem.registerItem(new CustomItem(itemStack));
-                     player.sendMessage(ChatColor.GREEN + "Du hast ein CustomItem hinzugefügt");
+                    } else {
+                        ItemStack itemStack = player.getInventory().getItemInMainHand();
+                        CustomItem.registerItem(new CustomItem(itemStack));
+                        player.sendMessage(ChatColor.GREEN + "Du hast ein CustomItem hinzugefügt");
                     }
                 }
-            }
-            else {
+            } else {
                 sender.sendMessage("Du hast keine Berechtigung dazu");
             }
         }
@@ -62,6 +63,9 @@ public class MakeCommand implements TabExecutor {
                         ItemStack itemStack = player.getInventory().getItemInMainHand();
                         CustomItem.registerItem(new CustomItem(itemStack, Kampfklassen.getOfArray(args[1])));
                         player.sendMessage(ChatColor.GREEN + "Du hast ein CustomItem der Kampfklasse " + Kampfklassen.getOfArray(args[1]).getDisplayName() + " hinzugefügt");
+                    } else if(args[0].equalsIgnoreCase("newTypes")){
+                        Type type = new Type(args[1]);
+                        Funktions.registerType(type);
                     }
                 }
             }
@@ -254,9 +258,20 @@ public class MakeCommand implements TabExecutor {
                 tabCompleteList.add("<Name>");
             }
             else if(args[0].equalsIgnoreCase("newMobXP")){
-                for(EntityType entityType : EntityType.values()) {
-                    if (!entityType.equals(EntityType.UNKNOWN)) {
-                        tabCompleteList.add(entityType.getTranslationKey());
+                if(args[1].equalsIgnoreCase("")) {
+                    for (EntityType entityType : EntityType.values()) {
+                        if (!entityType.equals(EntityType.UNKNOWN)) {
+                            tabCompleteList.add(entityType.getTranslationKey());
+                        }
+                    }
+                }
+                else {
+                    for (EntityType type : EntityType.values()) {
+                        if (!type.equals(EntityType.UNKNOWN)) {
+                            if (type.getTranslationKey().toLowerCase().startsWith(args[1].toLowerCase())) {
+                                tabCompleteList.add(type.name());
+                            }
+                        }
                     }
                 }
             }
@@ -359,7 +374,6 @@ public class MakeCommand implements TabExecutor {
         item.setItemMeta(meta);
         return item;
     }
-
     public static int stringToInt(String str, Player player) {
         StringBuilder numberString = new StringBuilder();
 

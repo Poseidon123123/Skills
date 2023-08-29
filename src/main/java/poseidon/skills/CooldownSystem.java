@@ -140,12 +140,19 @@ public class CooldownSystem {
 
     public static void cooldown(ItemStack item, Player player, int countDown){
         int pos = player.getInventory().first(item);
+        item.setAmount(countDown + 1);
         if(pos < 1){
             return;
         }
+        player.getInventory().setItem(pos, item);
         while (countDown > 0){
             int delay = countDown * 20;
-            Skills.getInstance().getServer().getScheduler().runTaskLater(Skills.getInstance(), () -> item.setAmount(item.getAmount() - 1), delay);
+            Skills.getInstance().getServer().getScheduler().runTaskLater(Skills.getInstance(), () -> {
+                if(player.getInventory().first(item) >= 0) {
+                    item.setAmount(item.getAmount() - 1);
+                    player.getInventory().setItem(pos, item);
+                }
+            }, delay);
             countDown--;
         }
 

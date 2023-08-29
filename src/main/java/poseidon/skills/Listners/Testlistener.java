@@ -2,6 +2,7 @@ package poseidon.skills.Listners;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -11,7 +12,10 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
-import org.bukkit.event.player.*;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerKickEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 import poseidon.skills.Chat.ChatAPI;
 import poseidon.skills.CooldownSystem;
@@ -26,14 +30,13 @@ import poseidon.skills.Skills;
 import poseidon.skills.UIs.UI;
 import poseidon.skills.citys.City;
 import poseidon.skills.citys.CityMapper;
+import poseidon.skills.citys.Nation;
+import poseidon.skills.executeSkills.Funktions;
 import poseidon.skills.skill.BerufSkills;
 import poseidon.skills.skill.KampfSkills;
 import poseidon.skills.skill.SkillMapper;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 import static poseidon.skills.Klassen.KlassChoose.getPlayers;
 
@@ -235,15 +238,36 @@ public class Testlistener implements Listener {
         if(CityMapper.ChunkClaimed(event.getBlock().getChunk())){
             event.setCancelled(true);
             City city = CityMapper.whoClaimed(event.getBlock().getChunk());
-            for(UUID uuid : city.getBuergerUUID()){
-                if(uuid.equals(event.getPlayer().getUniqueId())){
-                    event.setCancelled(false);
-                    break;
+            if(city != null) {
+                for (UUID uuid : city.getBuergerUUID()) {
+                    if (uuid.equals(event.getPlayer().getUniqueId())) {
+                        event.setCancelled(false);
+                        break;
+                    }
+                }
+            }
+            Nation nation = CityMapper.whichNationClaimed(event.getBlock().getChunk());
+            if(nation != null){
+                for(UUID uuid : nation.getBuergerUUID()){
+                    if(uuid.equals(event.getPlayer().getUniqueId())){
+                        event.setCancelled(false);
+                        break;
+                    }
                 }
             }
             if(event.isCancelled()){
                 event.getPlayer().sendMessage(Objects.requireNonNull(Skills.getInstance().getConfig().getString("Event.NotInCity.Break")));
             }
+        }
+        if(Funktions.hasRemember(event.getPlayer())){
+            List<Material> material = Funktions.getRemember(event.getPlayer());
+            if(material.contains(event.getBlock().getType())){
+                for(Block block : getConnectedBlocks(event.getBlock())){
+                    block.breakNaturally(event.getPlayer().getItemInUse());
+                }
+
+            }
+            Funktions.remmoveRemember(event.getPlayer());
         }
     }
 
@@ -252,10 +276,21 @@ public class Testlistener implements Listener {
         if(CityMapper.ChunkClaimed(event.getBlock().getChunk())){
             event.setCancelled(true);
             City city = CityMapper.whoClaimed(event.getBlock().getChunk());
-            for(UUID uuid : city.getBuergerUUID()){
-                if(uuid.equals(event.getPlayer().getUniqueId())){
-                    event.setCancelled(false);
-                    break;
+            if(city != null) {
+                for (UUID uuid : city.getBuergerUUID()) {
+                    if (uuid.equals(event.getPlayer().getUniqueId())) {
+                        event.setCancelled(false);
+                        break;
+                    }
+                }
+            }
+            Nation nation = CityMapper.whichNationClaimed(event.getBlock().getChunk());
+            if(nation != null){
+                for(UUID uuid : nation.getBuergerUUID()){
+                    if(uuid.equals(event.getPlayer().getUniqueId())){
+                        event.setCancelled(false);
+                        break;
+                    }
                 }
             }
             if(event.isCancelled()){
@@ -263,4 +298,47 @@ public class Testlistener implements Listener {
             }
         }
     }
+
+    public static List<Block> getConnectedBlocks(Block startBlock) {
+        List<Block> connectedBlocks = new ArrayList<>();
+        Set<Block> visitedBlocks = new HashSet<>();
+        List<Block> blocksToCheck = new ArrayList<>();
+
+        blocksToCheck.add(startBlock);
+
+        while (!blocksToCheck.isEmpty() && connectedBlocks.size() < 64) {
+            Block currentBlock = blocksToCheck.remove(0);
+
+            if (!visitedBlocks.contains(currentBlock)) {
+                visitedBlocks.add(currentBlock);
+                connectedBlocks.add(currentBlock);
+
+                for (Block neighbor : getNeighbors(currentBlock)) {
+                    if (neighbor.getType() == startBlock.getType() && !visitedBlocks.contains(neighbor)) {
+                        blocksToCheck.add(neighbor);
+                    }
+                }
+            }
+        }
+
+        return connectedBlocks;
+    }
+
+    private static List<Block> getNeighbors(Block block) {
+        List<Block> neighbors = new ArrayList<>();
+
+        for (int xOffset = -1; xOffset <= 1; xOffset++) {
+            for (int yOffset = -1; yOffset <= 1; yOffset++) {
+                for (int zOffset = -1; zOffset <= 1; zOffset++) {
+                    if (xOffset != 0 || yOffset != 0 || zOffset != 0) {
+                        Block neighbor = block.getRelative(xOffset, yOffset, zOffset);
+                        neighbors.add(neighbor);
+                    }
+                }
+            }
+        }
+
+        return neighbors;
+    }
+
 }

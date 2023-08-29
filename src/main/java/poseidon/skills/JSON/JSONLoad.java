@@ -11,6 +11,7 @@ import org.bukkit.inventory.RecipeChoice;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
 import org.bukkit.inventory.recipe.CraftingBookCategory;
+import org.bukkit.potion.PotionEffectType;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -27,14 +28,14 @@ import poseidon.skills.XPMapper;
 import poseidon.skills.XPObjekt;
 import poseidon.skills.citys.City;
 import poseidon.skills.citys.CityMapper;
+import poseidon.skills.citys.Nation;
+import poseidon.skills.executeSkills.Funktions;
+import poseidon.skills.executeSkills.Type;
 import poseidon.skills.skill.BerufSkills;
 import poseidon.skills.skill.KampfSkills;
 import poseidon.skills.skill.SkillMapper;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.Reader;
+import java.io.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -68,17 +69,60 @@ public class JSONLoad {
                 LocalDateTime berufChange = object.containsKey("BerufChange") ? JSONSave.stringToLocalDateTime((String) object.get("BerufChange")) : null;
                 LocalDateTime kampfChange = (object.containsKey("KampfChange")) ? JSONSave.stringToLocalDateTime((String) object.get("KampfChange")) : null;
                 ChatAPI.Chats chats = object.containsKey("Chat") ? ChatAPI.Chats.getByKurz((String) object.get("Chat")) : ChatAPI.Chats.GlobalChat;
-                return new Players(player, klassen1, kampfklassen, (int) beruflevel, (int) berufXP, (int) kampflevel, (int) kampfXP, (int) money, city, berufItem,
+                return new Players(player.getUniqueId(), klassen1, kampfklassen, (int) beruflevel, (int) berufXP, (int) kampflevel, (int) kampfXP, (int) money, city, berufItem,
                         berufSkills, kampfItem, kampfSkills, berufChange, kampfChange, chats);
             } catch (IOException | ParseException e) {
                 throw new RuntimeException(e);
             }
         }
         else {
-            return new Players(player, Berufklasse.Unchosed, Kampfklassen.Unchosed);
+            return new Players(player.getUniqueId(), Berufklasse.Unchosed, Kampfklassen.Unchosed);
         }
     }
-
+    public static void loadNations(){
+        File f = new File(JSONSave.getNationDic());
+        File[] files = f.listFiles();
+        if(files == null){
+            return;
+        }
+        for(File file : files){
+            JSONParser parser = new JSONParser();
+            try (Reader reader = new FileReader(file)){
+                JSONObject object = (JSONObject) parser.parse(reader);
+                String nationName = (String) object.get("Name");
+                City city = CityMapper.getByName((String) object.get("MainCity"));
+                UUID uuid = UUID.fromString((String) object.get("Meister"));
+                long money = (long) object.get("Money");
+                List<City> cityList = new ArrayList<>();
+                int x = 1;
+                while (object.containsKey("CityName" + x)){
+                    cityList.add(CityMapper.getByName((String) object.get("CityName" + x)));
+                    x++;
+                }
+                int z = 1;
+                List<UUID> vizeList = new ArrayList<>();
+                while (object.containsKey("Vize" + z)){
+                    vizeList.add(UUID.fromString((String) object.get("Vize" + z)));
+                    z++;
+                }
+                int y = 1;
+                List<Chunk> chunkList = new ArrayList<>();
+                while (object.containsKey("XChunk" + y) && object.containsKey("ZChunk" + y)){
+                    long X = (long) object.get("XChunk" + y);
+                    long Z = (long) object.get("ZChunk" + y);
+                    String worldName = (String) object.get("ChunkWolrd" + y);
+                    World world = Skills.getInstance().getServer().getWorld(worldName);
+                    if (world != null) {
+                        chunkList.add(world.getChunkAt((int) X, (int) Z));
+                    }
+                    y++;
+                }
+                CityMapper.addNation(new Nation(nationName, city, uuid, chunkList,cityList, (int) money, vizeList));
+            } catch (ParseException | IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
     public static void loadCitys(){
         File f = new File(JSONSave.getCityDic());
         File[] files = f.listFiles();
@@ -113,7 +157,14 @@ public class JSONLoad {
                     }
                     y++;
                 }
-                CityMapper.addCity(new City(name, uuid,(int) money, buergerList, chunkList));
+                String nation = object.containsKey("Nation") ? (String) object.get("Nation") : null;
+                int z = 1;
+                List<UUID> vizeList = new ArrayList<>();
+                while ((object.containsKey("Vize" + z))){
+                    vizeList.add(UUID.fromString((String) object.get("Vize" + z)));
+                    z++;
+                }
+                CityMapper.addCity(new City(name, uuid,(int) money, buergerList, chunkList, nation, vizeList));
             }
             catch (IOException | ParseException e) {
                 throw new RuntimeException(e);
@@ -307,7 +358,7 @@ public class JSONLoad {
         File[] files = f.listFiles();
         if (files == null) {
             return;
-        }
+       }
         for (File file : files) {
             JSONParser parser = new JSONParser();
             try (Reader reader = new FileReader(file)) {
@@ -349,6 +400,70 @@ public class JSONLoad {
                     }
                 }
                 XPMapper.addMob(entityType, (int) integer);
+            } catch (IOException | ParseException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+    public static void loadTyps(){
+        File f = new File(JSONSave.getTypeDic());
+        File[] files = f.listFiles();
+        if(files == null){
+            return;
+        }
+        for(File file : files){
+            JSONParser parser = new JSONParser();
+            try (Reader reader = new FileReader(file)){
+                JSONObject object = (JSONObject) parser.parse(reader);
+                String name = (String) object.get("Name");
+                Type type = new Type(name);
+                if(object.containsKey("projetile") && object.containsKey("proMulti")){
+                    String s = (String) object.get("projetile");
+                    EntityType entityType = EntityType.ARROW;
+                    for(EntityType entityType1 : EntityType.values()){
+                        if(entityType1.equals(EntityType.UNKNOWN)){
+                            continue;
+                        }
+                        if(entityType1.getTranslationKey().equals(s)){
+                            entityType = entityType1;
+                        }
+                    }
+                    long para = (long) object.get("proMulti");
+                    type.setParameters(entityType, (int) para);
+                }
+                if(object.containsKey("rememberDuration") && object.containsKey("rememgerMaterial1")){
+                    long dur = (long) object.get("rememberDuration");
+                    int a = 1;
+                    List<Material> materials = new ArrayList<>();
+                    while (object.containsKey("rememgerMaterial" + a)){
+                        materials.add(Material.matchMaterial((String) object.get("rememgerMaterial" + a)));
+                        a++;
+                    }
+                    type.setParameters(materials,(int) dur);
+                }
+                if(object.containsKey("tpPara")){
+                    long l = (long) object.get("tpPara");
+                    type.setParameters((int) l, true);
+                }
+                if(object.containsKey("leapPara")){
+                    long l = (long) object.get("leapPara");
+                    type.setParameters((int) l, false);
+                }
+                if(object.containsKey("selfPotion") && object.containsKey("selfDur") && object.containsKey("selfAmpli")){
+                    PotionEffectType effectType = PotionEffectType.getByKey(NamespacedKey.fromString((String) object.get("selfPotion")));
+                    long l = (long) object.get("selfDur");
+                    long x = (long) object.get("selfAmpli");
+                    type.setParameters(effectType,(int) l, (int) x);
+                }
+                if(object.containsKey("nearPotion") && object.containsKey("nearRadius") && object.containsKey("nearMax") && object.containsKey("nearDur") && object.containsKey("nearAmpli")){
+                    PotionEffectType effectType = PotionEffectType.getByKey(NamespacedKey.fromString((String) object.get("nearPotion")));
+                    long rad = (long) object.get("nearRadius");
+                    long max = (long) object.get("nearMax");
+                    long dur = (long) object.get("nearDur");
+                    long amp = (long) object.get("nearAmpli");
+                    type.setParameters(effectType,(int) dur, (int) amp, (int) max, (int) rad);
+                }
+                Funktions.registerType(type);
             } catch (IOException | ParseException e) {
                 throw new RuntimeException(e);
             }

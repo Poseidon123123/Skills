@@ -17,8 +17,8 @@ public class BerufSlotUI extends UI{
         super(player);
         this.inv = SlotGUI.getSlotGUI(player);
         player.openInventory(this);
-        item = berufSkills.getIcon();
         berufSkills = berufSkill;
+        item = berufSkills.getIcon();
     }
     private static BerufSkills berufSkills;
     private static ItemStack item;

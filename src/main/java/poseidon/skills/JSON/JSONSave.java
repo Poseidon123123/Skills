@@ -1,6 +1,7 @@
 package poseidon.skills.JSON;
 
 import org.bukkit.Chunk;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ShapedRecipe;
@@ -22,6 +23,10 @@ import poseidon.skills.XPMapper;
 import poseidon.skills.XPObjekt;
 import poseidon.skills.citys.City;
 import poseidon.skills.citys.CityMapper;
+import poseidon.skills.citys.Nation;
+import poseidon.skills.executeSkills.Funktions;
+import poseidon.skills.executeSkills.Type;
+import poseidon.skills.executeSkills.Type.types;
 import poseidon.skills.skill.BerufSkills;
 import poseidon.skills.skill.KampfSkills;
 import poseidon.skills.skill.SkillMapper;
@@ -34,6 +39,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+
 @SuppressWarnings("unchecked")
 public class JSONSave {
 
@@ -55,9 +61,10 @@ public class JSONSave {
         new File(getCustomItemListDic()).mkdirs();
         new File(getCustomShapelessRecipeDic()).mkdirs();
         new File(getPluginDic()).mkdirs();
+        new File(getNationDic()).mkdirs();
+        new File(getTypeDic()).mkdirs();
     }
     public static void playerSave(Player player) {
-        System.out.println("PlayerSave");
         JSONObject obj = new JSONObject();
         Players players = KlassChoose.getPlayers(player);
         String name = player.getName();
@@ -99,7 +106,6 @@ public class JSONSave {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        System.out.println("Player save done");
     }
     public static void generateDestroyFIles(List<XPObjekt> map) {
         map.forEach(xpObjekt -> {
@@ -134,6 +140,48 @@ public class JSONSave {
                 file.write(object.toJSONString());
             } catch (IOException e) {
                 e.printStackTrace();
+            }
+        });
+    }
+
+    public static void saveTypes(){
+        Funktions.getTypes().forEach((s, type) -> {
+            JSONObject object = new JSONObject();
+            object.put("Name", type.getName());
+            if (type.getType().contains(types.projectile)) {
+                object.put("projetile", type.getEntityType().getTranslationKey());
+                object.put("proMulti", type.getProjectilePara());
+            }
+            if (type.getType().contains(types.remember)) {
+                int a = 1;
+                for(Material m : type.getRememberAction()){
+                    object.put("rememgerMaterial" + a, m.toString());
+                    a++;
+                }
+                object.put("rememberDuration", type.getRememberDuration());
+            }
+            if(type.getType().contains(types.teleport)){
+                object.put("tpPara", type.getTpPara());
+            }
+            if(type.getType().contains(types.leap)){
+                object.put("leapPara", type.getLeapPara());
+            }
+            if(type.getType().contains(types.self)){
+                object.put("selfPotion", type.getSelfEffect().getKey().toString());
+                object.put("selfDur", type.getSelfDur());
+                object.put("selfAmpli", type.getSelfAmpli());
+            }
+            if(type.getType().contains(types.nearest)){
+                object.put("nearPotion", type.getNearestEffect().getKey().toString());
+                object.put("nearRadius", type.getNearRadius());
+                object.put("nearMax", type.getNearMax());
+                object.put("nearDur", type.getNearDur());
+                object.put("nearAmpli", type.getNearAmpli());
+            }
+            try (FileWriter file = new FileWriter(getCustomTypePath(type))){
+                file.write(object.toJSONString());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
         });
     }
@@ -243,6 +291,46 @@ public class JSONSave {
             }
         });
     }
+    public static void saveNations(){
+        for(Nation nation : CityMapper.getNationList()){
+            JSONObject object = new JSONObject();
+            object.put("Name", nation.getNationName());
+            object.put("Money", nation.getNationMoney());
+            object.put("Meister", nation.getKing().toString());
+            int x = 1;
+            for (Map.Entry<City, List<UUID>> entry : nation.getCityList().entrySet()) {
+                City city = entry.getKey();
+                object.put("CityName" + x, city.getCityName());
+                x++;
+            }
+            int y = 1;
+            for (Chunk chunk : nation.getChunkList()) {
+                object.put("XChunk" + y, chunk.getX());
+                object.put("ZChunk" + y, chunk.getZ());
+                object.put("ChunkWolrd" + y, chunk.getWorld().getName());
+                y++;
+            }
+            object.put("MainCity", nation.getMainCity().getCityName());
+            int z = 1;
+            for(UUID player : nation.getVizeList()){
+                object.put("Vize" + z, player);
+                z++;
+            }
+            try (FileWriter fileWriter = new FileWriter(getNationPath(nation))){
+                fileWriter.write(object.toJSONString());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+    public static void unSaveCity(City city){
+        File f = new File(getCityPath(city));
+        f.deleteOnExit();
+    }
+    public static void unSaveNation(Nation nation){
+        File f = new File(getNationPath(nation));
+        f.deleteOnExit();
+    }
     public static void berufSkillSave() {
         for (BerufSkills kampfSkills : SkillMapper.getBerufSkills()) {
             JSONObject object = new JSONObject();
@@ -284,7 +372,6 @@ public class JSONSave {
             }
         });
     }
-
     public static void saveCitys() {
         CityMapper.getCityList().forEach(city -> {
             JSONObject object = new JSONObject();
@@ -303,6 +390,14 @@ public class JSONSave {
                 object.put("ChunkWolrd" + y, chunk.getWorld().getName());
                 y++;
             }
+            int z = 1;
+            for(UUID player : city.getVizeList()){
+                object.put("Vize" + z, player);
+                z++;
+            }
+            if(city.getNation() != null){
+                object.put("Nation", city.getNation().getNationName());
+            }
             try (FileWriter fileWriter = new FileWriter(getCityPath(city))) {
                 fileWriter.write(object.toJSONString());
             } catch (IOException e) {
@@ -310,7 +405,6 @@ public class JSONSave {
             }
         });
     }
-
     public static void safeCustomItems() {
         for (Map.Entry<String, CustomItem> entry : CustomItem.customItemHashMap.entrySet()) {
             CustomItem customItem = entry.getValue();
@@ -350,6 +444,10 @@ public class JSONSave {
 
     public static String getCityDic() {
         return getPluginDic() + "/Citys/";
+    }
+
+    public static String getNationDic(){
+        return getPluginDic() + "/Nation/";
     }
 
     public static String getXPPath() {
@@ -408,6 +506,11 @@ public class JSONSave {
         return getCustomItemDic() + "/ShapelessRecipes/";
     }
 
+    public static String getTypeDic(){
+        return getPluginDic() + "/SkillFunktions/";
+    }
+
+
 
     public static String getBerufKlassenPath(Berufklasse klassen) {
         return getBerufKlassDic() + "/" + klassen.getDisplayName() + ".json";
@@ -445,9 +548,17 @@ public class JSONSave {
         return getCustomShapedRecipeDic() + "/" + recipe.getKey().getKey() + ".json";
     }
 
+    public static String getCustomTypePath(Type type){
+        return getTypeDic() + "/" + type.getName() + ".json";
+    }
+
 
     public static String getMobPath(String string) {
         return getMobsPath() + "/" + string + ".json";
+    }
+
+    public static String getNationPath(Nation nation){
+        return getNationDic() + "/" + nation.getNationName() + ".json";
     }
 
     public enum location {

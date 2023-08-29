@@ -15,6 +15,7 @@ import poseidon.skills.Klassen.Berufklasse;
 import poseidon.skills.Klassen.Kampfklassen;
 import poseidon.skills.Klassen.KlassChoose;
 import poseidon.skills.citys.CityMapper;
+import poseidon.skills.executeSkills.Funktions;
 import poseidon.skills.skill.BerufSkills;
 import poseidon.skills.skill.KampfSkills;
 import poseidon.skills.skill.SkillMapper;
@@ -37,7 +38,7 @@ public class Debug implements TabExecutor {
             if (args[0].equalsIgnoreCase("CustomItems")) {
                 if(!sender.hasPermission("Skills.command.DB.CustomItems")) {
                     player.sendMessage(ChatColor.RED + "Du hast die Rechte dafür nicht!");
-                    return false;
+                    return true;
                 }
                 CustomItem.customItemHashMap.forEach((s, customItem) -> {
                     player.getInventory().addItem(customItem.getCustomItem());
@@ -53,7 +54,7 @@ public class Debug implements TabExecutor {
             if (args[0].equalsIgnoreCase("List")) {
                 if(!sender.hasPermission("Skills.command.DB.List")) {
                     player.sendMessage(ChatColor.RED + "Du hast die Rechte dafür nicht!");
-                    return false;
+                    return true;
                 }
                 if (args[1].equalsIgnoreCase("Berufklassen")) {
                     player.sendMessage("Alle geladenen Berufklassen:");
@@ -103,11 +104,17 @@ public class Debug implements TabExecutor {
                         player.sendMessage(customItem.getBerufklasse().getDisplayName());
                     });
                 }
+                if(args[1].equalsIgnoreCase("Nation")){
+                    CityMapper.getNationList().forEach(nation -> player.sendMessage(nation.getNationName()));
+                }
+                if(args[1].equalsIgnoreCase("types")){
+                    Funktions.getTypes().forEach((s, type) -> player.sendMessage(s));
+                }
             }
             if (args[0].equalsIgnoreCase("addList")) {
                 if(!sender.hasPermission("Skills.command.DB.loadList")) {
                     player.sendMessage(ChatColor.RED + "Du hast die Rechte dafür nicht!");
-                    return false;
+                    return true;
                 }
                 if(args[1].equalsIgnoreCase("CustomItems")){
                     CustomItem.makeExamples();
@@ -141,11 +148,14 @@ public class Debug implements TabExecutor {
                     XPObjekt.addMainBase();
                     sender.sendMessage("XP-Quellen geladen");
                 }
+                if(args[1].equalsIgnoreCase("Types")){
+                    Funktions.generateExample();
+                }
             }
             if (args[0].equalsIgnoreCase("generateFile")) {
                 if(!player.hasPermission("Skills.command.DB.dic")){
                     player.sendMessage(ChatColor.RED + "Du hast die Rechte dafür nicht!");
-                    return false;
+                    return true;
                 }
                 if(args[1].equalsIgnoreCase("ShapedRecipes")){
                     JSONSave.saveShapedRecipes();
@@ -183,11 +193,15 @@ public class Debug implements TabExecutor {
                     JSONSave.safeCustomItems();
                     sender.sendMessage("CustomItems gespeichert");
                 }
+                if(args[1].equalsIgnoreCase("Types")){
+                    JSONSave.saveTypes();
+                    sender.sendMessage("Types gespeichert");
+                }
             }
             if (args[0].equalsIgnoreCase("deletePlayers")) {
                 if(!sender.hasPermission("Skills.command.DB.deletePlayer")){
                     player.sendMessage(ChatColor.RED + "Du hast die Rechte dafür nicht!");
-                    return false;
+                    return true;
                 }
                 Player player1 = Bukkit.getPlayerExact(args[1]);
                 if (player1 != null) {
@@ -251,6 +265,8 @@ public class Debug implements TabExecutor {
                 tabCompleteList.add("Chunks");
                 tabCompleteList.add("Recipes");
                 tabCompleteList.add("CustomItems");
+                tabCompleteList.add("Nation");
+                tabCompleteList.add("Types");
             } else if (args[0].equalsIgnoreCase("generateFile") && sender.hasPermission("Skills.command.DB.dic")) {
                 tabCompleteList.add("BerufKlassen");
                 tabCompleteList.add("KampfKlassen");
@@ -261,6 +277,7 @@ public class Debug implements TabExecutor {
                 tabCompleteList.add("CustomItems");
                 tabCompleteList.add("ShapedRecipes");
                 tabCompleteList.add("ShapelessRecipes");
+                tabCompleteList.add("Types");
             } else if (args[0].equalsIgnoreCase("addList") && sender.hasPermission("Skills.command.DB.loadList")) {
                 tabCompleteList.add("BerufKlassen");
                 tabCompleteList.add("KampfKlassen");
@@ -270,6 +287,7 @@ public class Debug implements TabExecutor {
                 tabCompleteList.add("CustomItems");
                 tabCompleteList.add("ShapedRecipes");
                 tabCompleteList.add("ShapelessRecipes");
+                tabCompleteList.add("Types");
             }
             else if (args[0].equalsIgnoreCase("deletePlayers") && sender.hasPermission("Skills.command.DB.deletePlayer")) {
                 Bukkit.getOnlinePlayers().forEach(player -> tabCompleteList.add(player.getName()));

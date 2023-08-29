@@ -13,8 +13,10 @@ public class City {
     private String cityName;
     private int cityMoney;
     private UUID buergermeister;
-    private List<UUID> buerger;
+    private  List<UUID> buerger;
     private List<Chunk> claimedChunks;
+    private String nation;
+    private List<UUID> vizeList;
 
     public City(String cityName, Player player){
         this.cityName = cityName;
@@ -22,6 +24,7 @@ public class City {
         this.buergermeister = player.getUniqueId();
         this.buerger = List.of(buergermeister);
         this.claimedChunks = List.of(player.getLocation().getChunk());
+        this.vizeList = new ArrayList<>();
     }
     public City(String cityName, UUID uuid, Chunk chunk){
         this.cityName = cityName;
@@ -29,20 +32,25 @@ public class City {
         this.buergermeister = uuid;
         this.buerger = List.of(buergermeister);
         this.claimedChunks = List.of(chunk);
+        this.vizeList = new ArrayList<>();
     }
-    public City(String cityName, OfflinePlayer player, int Money, List<UUID> buerger, List<Chunk> chunkList){
+    public City(String cityName, OfflinePlayer player, int Money, List<UUID> buerger, List<Chunk> chunkList, String nation, List<UUID> vizeList){
         this.cityName = cityName;
         this.buergermeister = player.getUniqueId();
         this.cityMoney = Money;
         this.buerger = buerger;
         this.claimedChunks = chunkList;
+        this.nation = nation;
+        this.vizeList = vizeList;
     }
-    public City(String cityName, UUID player, int Money, List<UUID> buerger, List<Chunk> chunkList){
+    public City(String cityName, UUID player, int Money, List<UUID> buerger, List<Chunk> chunkList, String nation, List<UUID> vizeList){
         this.cityName = cityName;
         this.buergermeister = player;
         this.cityMoney = Money;
         this.buerger = buerger;
         this.claimedChunks = chunkList;
+        this.nation = nation;
+        this.vizeList = vizeList;
     }
 
     public List<Chunk> getClaimedChunks() {
@@ -88,7 +96,16 @@ public class City {
     }
 
     public void addCityMoney(int cityMoney) {
-        this.cityMoney = cityMoney + this.cityMoney;
+        this.cityMoney += cityMoney;
+    }
+    public boolean removeCityMoney(int cityMoney){
+        if(this.cityMoney - cityMoney < 0){
+            return false;
+        }
+        else {
+            this.cityMoney -= cityMoney;
+            return true;
+        }
     }
     public UUID getBuergermeisterUUID(){
         return buergermeister;
@@ -98,5 +115,39 @@ public class City {
     }
     public void setBuergermeister(UUID players){
         this.buergermeister = players;
+    }
+    public Nation getNation(){
+        return this.nation != null ? CityMapper.getNByName(this.nation) : null;
+    }
+
+    public List<UUID> getVizeList() {
+        return vizeList;
+    }
+
+    public void setVizeList(List<UUID> vizeList) {
+        this.vizeList = vizeList;
+    }
+    public boolean hasAdmin(UUID uuid){
+        return vizeList.contains(uuid) || uuid.equals(getBuergermeisterUUID());
+    }
+    public boolean isVize(UUID uuid){
+        return vizeList.contains(uuid);
+    }
+    public void addVize(UUID uuid){
+        vizeList.add(uuid);
+    }
+    public void remobeVize(UUID uuid){
+        vizeList.remove(uuid);
+    }
+    public void setNation(String s){
+        this.nation = s;
+    }
+    public boolean adminOnline(){
+        for (Player player : Bukkit.getOnlinePlayers()){
+            if(vizeList.contains(player.getUniqueId()) || getBuergermeisterUUID().equals(player.getUniqueId())){
+                return true;
+            }
+        }
+        return false;
     }
 }

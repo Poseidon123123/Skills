@@ -9,11 +9,13 @@ import poseidon.skills.Klassen.KlassChoose;
 import poseidon.skills.Klassen.Players;
 import poseidon.skills.Skills;
 import poseidon.skills.citys.City;
+import poseidon.skills.citys.Nation;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+@SuppressWarnings("SuspiciousNameCombination")
 public class ChatAPI {
     public enum Chats {
         NationChat("NC", "Format.Chat.NationChat"),
@@ -64,18 +66,38 @@ public class ChatAPI {
         b = b.replace("{message}", message);
         return b;
     }
+    private static String formateFromSkills(Chats chats, String message){
+        String b = Skills.getInstance().message(chats.getFormatPath());
+            b = b.replace("{name}", "Server");
+            b = b.replace("{message}", message);
+            return b;
+
+
+    }
+
     public static void sendMessageInChat(Player player, Chats chats, String message){
         Players players = KlassChoose.getPlayers(player);
         String a = formateFromSkills(chats,message,player);
         switch (chats){
-            case GlobalChat -> {
-                Bukkit.broadcastMessage(a);
-            }
+            case GlobalChat -> Bukkit.broadcastMessage(a);
             case NationChat -> {
                 if(players.getHometown() == null){
                     player.sendMessage(ChatColor.RED + "Um hier schreiben zu können musst du Teil einer Stadt sein!");
                 }
-                //TODO Nations
+                if(players.getHometown().getNation() == null){
+                    player.sendMessage("§4Um hier schreiben zu können muss deine Stadt in einer Nation sein");
+                }
+                Nation nation = players.getHometown().getNation();
+                List<Player> boradCastList = new ArrayList<>();
+                for(UUID uuid : nation.getBuergerUUID()){
+                    Player player1 = Bukkit.getPlayer(uuid);
+                    if(player1 != null){
+                        boradCastList.add(player1);
+                    }
+                }
+                for(Player burger : boradCastList){
+                    burger.sendMessage(a);
+                }
             }
             case CityChat -> {
                 if(players.getHometown() == null){
@@ -147,4 +169,29 @@ public class ChatAPI {
             }
         }
     }
+    public static void sendServerMessage(Nation nation, String message){
+        List<Player> boradCastList = new ArrayList<>();
+        for(UUID uuid : nation.getBuergerUUID()){
+            Player player1 = Bukkit.getPlayer(uuid);
+            if(player1 != null){
+                boradCastList.add(player1);
+            }
+        }
+        for(Player burger : boradCastList){
+            burger.sendMessage(formateFromSkills(Chats.NationChat, message));
+        }
+    }
+    public static void sendServerMessage(City nation, String message){
+        List<Player> boradCastList = new ArrayList<>();
+        for(UUID uuid : nation.getBuergerUUID()){
+            Player player1 = Bukkit.getPlayer(uuid);
+            if(player1 != null){
+                boradCastList.add(player1);
+            }
+        }
+        for(Player burger : boradCastList){
+            burger.sendMessage(formateFromSkills(Chats.CityChat, message));
+        }
+    }
+
 }
